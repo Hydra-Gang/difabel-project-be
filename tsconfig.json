@@ -1,0 +1,19 @@
+{
+    "$schema": "https://json.schemastore.org/tsconfig",
+    "compilerOptions": {
+        "target": "ES5",
+        "module": "CommonJS",
+        "outDir": "./dist/",
+        "strict": true,
+        "removeComments": true,
+        "moduleResolution": "Node",
+        "esModuleInterop": true,
+        "forceConsistentCasingInFileNames": true,
+        "noFallthroughCasesInSwitch": true,
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true
+    },
+    "include": [
+        "./src/**/*"
+    ]
+}
