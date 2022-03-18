@@ -1,10 +1,10 @@
 {
     "type": "postgres",
-    "host": "",
+    "host": "localhost",
     "port": 5432,
-    "username": "",
+    "username": "postgres",
     "password": "",
-    "database": "",
+    "database": "difabel",
     "synchronize": true,
     "logging": false,
     "entities": [
