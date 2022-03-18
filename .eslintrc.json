@@ -12,7 +12,8 @@
     ],
     "parser": "@typescript-eslint/parser",
     "parserOptions": {
-        "ecmaVersion": "latest"
+        "ecmaVersion": "latest",
+        "project": ["./tsconfig.json"]
     },
     "plugins": [
         "@typescript-eslint",
@@ -27,6 +28,10 @@
         "@typescript-eslint/no-explicit-any": "warn",
         "@typescript-eslint/prefer-for-of": "warn",
         "@typescript-eslint/no-require-imports": "error",
+        "@typescript-eslint/no-shadow": "error",
+        "@typescript-eslint/prefer-string-starts-ends-with": "error",
+        "@typescript-eslint/prefer-optional-chain": "error",
+        "@typescript-eslint/prefer-nullish-coalescing": "error",
 
         // import
         "import/first": "error",
@@ -36,6 +41,7 @@
         "import/exports-last": "error",
         "import/newline-after-import": "error",
         "import/extensions": ["error", "never"],
+        "import/no-unresolved": "off",
 
         // security
         "no-eval": "error",
@@ -63,7 +69,6 @@
         "no-labels": "error",
         "no-label-var": "error",
         "no-lone-blocks": "error",
-        "no-shadow": "error",
         "no-self-compare": "error",
         "no-empty-function": "warn",
         "no-template-curly-in-string": "error",
@@ -103,7 +108,6 @@
         "keyword-spacing": "error",
         "default-case-last": "error",
         "func-call-spacing": "error",
-        "lines-between-class-members": "error",
         "rest-spread-spacing": "error",
         "template-curly-spacing": "error",
         "brace-style": "error",
