@@ -1,8 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { sendResponse } from '../utils/api.util';
-
-import joi from 'joi';
+import { ObjectSchema } from 'joi';
 
 /**
  * Validates a request from client
@@ -13,7 +12,7 @@ import joi from 'joi';
  *          go `false` to validate `body` property
  *          within the {@link Request request}.
  */
-function validateHandler(schema: joi.ObjectSchema, isParams = false) {
+function validate(schema: ObjectSchema, isParams = false) {
     return (req: Request, res: Response, next: NextFunction) => {
         let targetToValidate;
 
@@ -36,4 +35,4 @@ function validateHandler(schema: joi.ObjectSchema, isParams = false) {
     };
 }
 
-export default validateHandler;
+export default validate;

@@ -1,14 +1,15 @@
 import 'reflect-metadata';
 import app from './app';
-import { createConnection } from 'typeorm';
 
-const port = process.env.PORT || 3000;
+import { createConnection } from 'typeorm';
+import { createGlobalRouter } from './routes';
+
+const port = process.env.PORT ?? 3000;
 
 app.listen(port, async () => {
-    try {
-        await createConnection();
-        console.log(`Server is hosted at http://localhost:${port}/`);
-    } catch (err) {
-        console.error(err);
-    }
+    const globalRouter = await createGlobalRouter();
+    app.use('/', globalRouter);
+
+    await createConnection();
+    console.log(`\nServer is hosted at http://localhost:${port}/`);
 });
