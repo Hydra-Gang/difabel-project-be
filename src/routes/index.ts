@@ -56,7 +56,9 @@ function registerRouters(globalRouter: Router) {
         const currentRouter = Router();
         const controllerList = controllers[className];
 
-        currentRouter.use(...parent.middlewares);
+        if (parent.middlewares.length) {
+            currentRouter.use(...parent.middlewares);
+        }
 
         // To make the 'registering-route' output look pretty,
         // we're just going to add a line to the output

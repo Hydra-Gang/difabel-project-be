@@ -57,7 +57,7 @@ export class TodoRoute {
         }
     }
 
-    @Controller('DELETE', '/:todoId/', validate(todoIdSchema, true))
+    @Controller('DELETE', '/:todoId', validate(todoIdSchema, true))
     async removeTodo(req: Request, res: Response) {
         const { todoId } = req.params;
 
