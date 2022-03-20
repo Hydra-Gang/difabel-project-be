@@ -5,8 +5,8 @@ import jwt from 'jsonwebtoken';
 
 import { Request, Response } from 'express';
 import { Controller, Route } from '../decorators/express.decorator';
-import { AccessLevels, User } from '../entities/user.entity';
-import { ApiResponseParams, sendResponse } from '../utils/api.util';
+import { User } from '../entities/user.entity';
+import { ApiResponseParams, Errors, sendResponse } from '../utils/api.util';
 import { StatusCodes } from 'http-status-codes';
 import { extractBearerToken } from '../middlewares/authenticate.middleware';
 import {
@@ -59,11 +59,7 @@ export class Auth {
                 }
             });
         } catch (err) {
-            return sendResponse(res, {
-                statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-                success: false,
-                message: 'Unexpected server error'
-            });
+            return sendResponse(res, Errors.SERVER_ERROR);
         }
     }
 
@@ -99,27 +95,17 @@ export class Auth {
                 message: 'Successfully registered new user'
             });
         } catch (err) {
-            return sendResponse(res, {
-                statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-                success: false,
-                message: 'Unexpected server error'
-            });
+            return sendResponse(res, Errors.SERVER_ERROR);
         }
     }
 
     @Controller('POST', '/refresh')
     async refreshToken(req: Request, res: Response) {
-        const invalidError: ApiResponseParams<unknown> = {
-            success: false,
-            statusCode: StatusCodes.UNAUTHORIZED,
-            message: "You don't have an account session"
-        };
-
         const rawToken = req.header('authorization');
         const token = extractBearerToken(rawToken);
 
         if (!token || !REFRESH_TOKEN_LIST.includes(token)) {
-            return sendResponse(res, invalidError);
+            return sendResponse(res, Errors.NO_SESSION_ERROR);
         }
 
         try {
@@ -131,23 +117,17 @@ export class Auth {
                 }
             });
         } catch (err) {
-            return sendResponse(res, invalidError);
+            return sendResponse(res, Errors.NO_SESSION_ERROR);
         }
     }
 
     @Controller('DELETE', '/logout')
     async logout(req: Request, res: Response) {
-        const invalidError: ApiResponseParams<unknown> = {
-            success: false,
-            statusCode: StatusCodes.UNAUTHORIZED,
-            message: "You don't have an account session"
-        };
-
         const rawToken = req.header('authorization');
         const token = extractBearerToken(rawToken);
 
         if (!token || !REFRESH_TOKEN_LIST.includes(token)) {
-            return sendResponse(res, invalidError);
+            return sendResponse(res, Errors.NO_SESSION_ERROR);
         }
 
         try {
@@ -161,7 +141,7 @@ export class Auth {
                 message: 'Successfully logged out'
             });
         } catch (err) {
-            return sendResponse(res, invalidError);
+            return sendResponse(res, Errors.NO_SESSION_ERROR);
         }
     }
 

@@ -2,8 +2,7 @@ import jwt from 'jsonwebtoken';
 import config from '../configs/config';
 
 import { NextFunction, Request, Response } from 'express';
-import { sendResponse, ApiResponseParams } from '../utils/api.util';
-import { StatusCodes } from 'http-status-codes';
+import { sendResponse, Errors } from '../utils/api.util';
 
 /**
  * Validates a user authentication
@@ -18,17 +17,11 @@ import { StatusCodes } from 'http-status-codes';
  * ```
  */
 function authenticate(req: Request, res: Response, next: NextFunction) {
-    const invalidError: ApiResponseParams<unknown> = {
-        success: false,
-        statusCode: StatusCodes.UNAUTHORIZED,
-        message: "You don't have an account session"
-    };
-
     const rawToken = req.header('authorization');
     const token = extractBearerToken(rawToken);
 
     if (!token) {
-        return sendResponse(res, invalidError);
+        return sendResponse(res, Errors.NO_SESSION_ERROR);
     }
 
     try {
@@ -37,7 +30,7 @@ function authenticate(req: Request, res: Response, next: NextFunction) {
 
         return next();
     } catch (err) {
-        return sendResponse(res, invalidError);
+        return sendResponse(res, Errors.NO_SESSION_ERROR);
     }
 }
 
