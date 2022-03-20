@@ -138,4 +138,34 @@ export class Auth {
         }
     }
 
+    @Controller('DELETE', '/logout')
+    async logout(req: Request, res: Response) {
+        const invalidError: ApiResponseParams<unknown> = {
+            success: false,
+            statusCode: StatusCodes.UNAUTHORIZED,
+            message: "You don't have an account session"
+        };
+
+        const rawToken = req.header('authorization');
+        const token = extractBearerToken(rawToken);
+
+        if (!token || !REFRESH_TOKEN_LIST.includes(token)) {
+            return sendResponse(res, invalidError);
+        }
+
+        try {
+            jwt.verify(token, config.jwt.refreshSecret);
+
+            const idx = REFRESH_TOKEN_LIST.indexOf(token);
+            REFRESH_TOKEN_LIST.splice(idx);
+
+            return sendResponse(res, {
+                statusCode: StatusCodes.ACCEPTED,
+                message: 'Successfully logged out'
+            });
+        } catch (err) {
+            return sendResponse(res, invalidError);
+        }
+    }
+
 }
