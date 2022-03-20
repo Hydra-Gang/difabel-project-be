@@ -39,14 +39,23 @@ export class ReportRoute {
         const userId = req.body.$auth;
 
         const report = await Report.findOne({ where: { id: reportId } });
+
+        if (!report) {
+            return sendResponse(res, {
+                success: false,
+                statusCode: StatusCodes.NOT_FOUND,
+                message: 'Report not found'
+            });
+        }
+
         const user = await User.findOne({ where: { id: userId } });
 
-        report!.updatedAt = new Date();
-        report!.status = ReportStatuses.RESOLVED;
-        report!.user = user;
+        report.updatedAt = new Date();
+        report.status = ReportStatuses.RESOLVED;
+        report.user = user;
 
         try {
-            await Report.save(report!);
+            await Report.save(report);
 
             return sendResponse(res, {
                 message: 'Successfully mark the report status as resolved'
