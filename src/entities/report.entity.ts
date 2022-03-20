@@ -1,4 +1,6 @@
-import { BaseEntity, Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+    BaseEntity, Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn
+} from 'typeorm';
 import { User } from './user.entity';
 
 export enum ReportStatuses {
@@ -15,7 +17,7 @@ export class Report extends BaseEntity {
     @Column({ length: 64 })
     content!: string;
 
-    @Column({ type: 'bit', default: ReportStatuses.PENDING })
+    @Column({ type: 'smallint', default: ReportStatuses.PENDING })
     status!: ReportStatuses;
 
     @Column({ name: 'created_at', type: 'date' })
