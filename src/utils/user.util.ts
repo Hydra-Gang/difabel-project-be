@@ -1,26 +1,28 @@
 import jwt from 'jsonwebtoken';
 import config from '../configs/config';
+
 import { User } from '../entities/user.entity';
 
-export const REFRESH_TOKEN_LIST: string[] = [];
+export type UserLike = {
+    id: number,
+    email: string
+};
 
-export function createUserToken(user: User) {
-    const payload = {
+export function createPayload(user: User | UserLike) {
+    return {
         id: user.id,
         email: user.email
     };
+}
 
-    const accessToken = jwt.sign(
-        payload,
-        config.jwt.accessSecret,
-        {
-            notBefore: config.jwt.notBefore,
-            expiresIn: config.jwt.accessExpire,
-        }
-    );
+/**
+ * TODO: Use proper storage
+ */
+export const REFRESH_TOKEN_LIST: string[] = [];
 
+export function genRefreshToken(user: User | UserLike) {
     const refreshToken = jwt.sign(
-        payload,
+        createPayload(user),
         config.jwt.refreshSecret,
         {
             notBefore: config.jwt.notBefore,
@@ -29,5 +31,18 @@ export function createUserToken(user: User) {
     );
 
     REFRESH_TOKEN_LIST.push(refreshToken);
-    return { accessToken, refreshToken };
+    return refreshToken;
+}
+
+export function genAccessToken(user: User | UserLike) {
+    const accessToken = jwt.sign(
+        createPayload(user),
+        config.jwt.accessSecret,
+        {
+            notBefore: config.jwt.notBefore,
+            expiresIn: config.jwt.accessExpire,
+        }
+    );
+
+    return accessToken;
 }

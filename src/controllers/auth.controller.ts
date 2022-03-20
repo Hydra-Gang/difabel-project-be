@@ -1,14 +1,19 @@
 import bcrypt from 'bcrypt';
 import validate from '../middlewares/validate.middleware';
 import config from '../configs/config';
+import jwt from 'jsonwebtoken';
 
 import { Request, Response } from 'express';
 import { Controller, Route } from '../decorators/express.decorator';
 import { AccessLevels, User } from '../entities/user.entity';
 import { ApiResponseParams, sendResponse } from '../utils/api.util';
 import { StatusCodes } from 'http-status-codes';
-import { createUserToken } from '../utils/user.util';
-
+import { extractBearerToken } from '../middlewares/authenticate.middleware';
+import {
+    genAccessToken,
+    genRefreshToken,
+    REFRESH_TOKEN_LIST, UserLike
+} from '../utils/user.util';
 import {
     loginSchema, registerSchema,
     LoginType, RegisterType
@@ -48,7 +53,10 @@ export class Auth {
 
             return sendResponse(res, {
                 message: 'Successfully logged in as a user',
-                data: createUserToken(foundUser)
+                data: {
+                    accessToken: genAccessToken(foundUser),
+                    refreshToken: genRefreshToken(foundUser)
+                }
             });
         } catch (err) {
             return sendResponse(res, {
@@ -102,9 +110,32 @@ export class Auth {
         }
     }
 
-    // @Controller('POST', '/refresh')
+    @Controller('POST', '/refresh')
     async refreshToken(req: Request, res: Response) {
-        // TODO:
+        const invalidError: ApiResponseParams<unknown> = {
+            success: false,
+            statusCode: StatusCodes.UNAUTHORIZED,
+            message: "You don't have an account session"
+        };
+
+        const rawToken = req.header('authorization');
+        const token = extractBearerToken(rawToken);
+
+        if (!token || !REFRESH_TOKEN_LIST.includes(token)) {
+            return sendResponse(res, invalidError);
+        }
+
+        try {
+            const decoded = jwt.verify(token, config.jwt.refreshSecret);
+            return sendResponse(res, {
+                message: 'Successfully refreshed new token',
+                data: {
+                    accessToken: genAccessToken(decoded as UserLike)
+                }
+            });
+        } catch (err) {
+            return sendResponse(res, invalidError);
+        }
     }
 
 }
