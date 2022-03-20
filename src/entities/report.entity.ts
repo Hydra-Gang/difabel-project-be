@@ -1,8 +1,10 @@
-import { date } from 'joi';
-import {
-    BaseEntity, Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn
-} from 'typeorm';
 import { User } from './user.entity';
+
+import {
+    BaseEntity, Entity,
+    Column, JoinColumn, PrimaryGeneratedColumn,
+    ManyToOne
+} from 'typeorm';
 
 export enum ReportStatuses {
     PENDING,
