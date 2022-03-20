@@ -1,7 +1,9 @@
 import joi from 'joi';
 
-export type NewUserType = {
-    content: string
+export type NewReportType = {
+    content: string,
+    createdAt: Date,
+    updatedAt: Date
 };
 
 export const newReportSchema = joi.object({

@@ -21,7 +21,7 @@ export class Report extends BaseEntity {
     @Column({ type: 'smallint', default: ReportStatuses.PENDING })
     status!: ReportStatuses;
 
-    @Column({ name: 'created_at', type: 'date' })
+    @Column({ name: 'created_at', type: 'date', default: new Date() })
     createdAt!: Date;
 
     @Column({ name: 'updated_at', type: 'date', nullable: true })
