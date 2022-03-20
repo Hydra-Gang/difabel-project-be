@@ -14,3 +14,9 @@ export const newArticleSchema = joi.object({
         .max(2_000)
         .required()
 });
+
+export const articleIdSchema = joi.object({
+    articleId: joi.number()
+        .min(1)
+        .required()
+});
