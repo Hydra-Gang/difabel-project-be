@@ -38,13 +38,23 @@ export class ReportRoute {
         const reportId = req.params.reportId;
         const userId = req.body.$auth;
 
-        const report = await Report.findOne({ where: { id: reportId } });
+        let report;
 
-        if (!report) {
+        try {
+            report = await Report.findOne({ where: { id: reportId } });
+
+            if (!report) {
+                return sendResponse(res, {
+                    success: false,
+                    statusCode: StatusCodes.NOT_FOUND,
+                    message: 'Report not found'
+                });
+            }
+        } catch (error) {
             return sendResponse(res, {
                 success: false,
-                statusCode: StatusCodes.NOT_FOUND,
-                message: 'Report not found'
+                statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+                message: 'Unexpected server error'
             });
         }
 
