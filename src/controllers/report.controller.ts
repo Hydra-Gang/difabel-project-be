@@ -44,7 +44,7 @@ export class ReportRoute {
         );
 
         try {
-            Report.save(report);
+            await Report.save(report);
 
             return sendResponse(res, {
                 statusCode: StatusCodes.CREATED,
