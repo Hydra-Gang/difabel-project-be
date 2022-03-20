@@ -23,10 +23,10 @@ export class Article extends BaseEntity {
     @Column({ name: 'updated_at', type: 'date', default: new Date() })
     updatedAt!: Date;
 
-    @Column({ name: 'is_deleted' })
+    @Column({ name: 'is_deleted', default: false })
     isDeleted!: boolean;
 
-    @Column({ name: 'is_approved' })
+    @Column({ name: 'is_approved', default: false })
     isApproved!: boolean;
 
     @ManyToOne(() => User, (user) => user.articles)
@@ -36,5 +36,19 @@ export class Article extends BaseEntity {
     @ManyToOne(() => User)
     @JoinColumn({ name: 'approver_id' })
     approver!: User;
+
+    /**
+     * Gets the filtered version of the object
+     *
+     * NOTE: The object will lose it's reference.
+     */
+    filter() {
+        const cloned = { ...this } as Record<string, unknown>;
+
+        delete cloned.isDeleted;
+        delete cloned.isApproved;
+
+        return cloned;
+    }
 
 }
