@@ -13,7 +13,7 @@ import {
 @Route({ path: 'reports' })
 export class ReportRoute {
 
-    @Controller('GET', '/')
+    @Controller('GET', '/', authenticate)
     async getReports(req: Request, res: Response) {
         try {
             const reports = await Report.find();
