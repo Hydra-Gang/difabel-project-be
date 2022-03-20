@@ -33,6 +33,32 @@ export class ReportRoute {
         }
     }
 
+    @Controller('POST', '/add', validate(newReportSchema))
+    async addReport(req: Request, res: Response) {
+        const body = req.body as NewReportType;
+
+        const report = Report.create(
+            {
+                content: body.content
+            }
+        );
+
+        try {
+            Report.save(report);
+
+            return sendResponse(res, {
+                statusCode: StatusCodes.CREATED,
+                message: 'Successfully added report'
+            });
+        } catch (error) {
+            return sendResponse(res, {
+                success: false,
+                statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+                message: 'Unexpected server error'
+            });
+        }
+    }
+
     @Controller('PUT', '/status-update/:reportId', authenticate)
     async updateReportStatus(req: Request, res: Response) {
         const reportId = req.params.reportId;
