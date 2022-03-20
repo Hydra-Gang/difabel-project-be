@@ -43,6 +43,7 @@ Backend of the difabel project. This project is using the project template from 
    ```sh
    yarn install
    ```
+1. Duplicate the `.env.example` file to `.env` and fill the database credentials
 1. Generate JWT secrets
    ```sh
    yarn jwt:generate
@@ -100,10 +101,15 @@ yarn jwt:generate
 ## Environment Variables
 Found in the `.env` file
 ```sh
-# the JWT access secret
+# the JWT secrets
 JWT_ACCESS_SECRET=
-# the JWT refresh secret
 JWT_REFRESH_SECRET=
+
+# the postgres database credentials
+DB_HOST=
+DB_DATABASE=
+DB_USERNAME=
+DB_PASSWORD=
 ```
 
 ## Project Structure
@@ -111,6 +117,7 @@ JWT_REFRESH_SECRET=
 <your project>\
  |--scripts\             # User scripts for automating
  |--src\                 # Source folder
+     |--configs\         # Application configs
      |--controllers\     # Route controllers
      |--decorators\      # Custom decorators
      |--entities\        # Database models/entities (represents table)
@@ -121,9 +128,9 @@ JWT_REFRESH_SECRET=
          |--api.util.ts  # Server response utility
      |--validations\     # Schemas for validating JSON
      |--app.ts           # Express app and it's configuration
+     |--ormconfig.ts     # TypeORM config
      |--server.ts        # Program entry point (db connection is also here)
  |--.eslintrc.json       # ESLint config
- |--ormconfig.json       # TypeORM config (database credentiails)
  |--tsconfig.json        # TypeScript compiler config
  |--...
 ```
