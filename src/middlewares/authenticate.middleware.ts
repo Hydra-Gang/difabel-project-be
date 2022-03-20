@@ -18,28 +18,35 @@ import { StatusCodes } from 'http-status-codes';
  * ```
  */
 function authenticate(req: Request, res: Response, next: NextFunction) {
-    const prefix = 'Bearer ';
-    const rawToken = req.header('authorization');
-    const isValid = !rawToken || !rawToken.startsWith(prefix);
-
-    const apiParams: ApiResponseParams<unknown> = {
+    const invalidError: ApiResponseParams<unknown> = {
         success: false,
         statusCode: StatusCodes.UNAUTHORIZED,
         message: "You don't have an account session"
     };
 
-    if (!isValid) {
-        return sendResponse(res, apiParams);
+    const rawToken = req.header('authorization');
+    const token = extractBearerToken(rawToken);
+
+    if (!token) {
+        return sendResponse(res, invalidError);
     }
 
-    const token = rawToken!.replace(prefix, '');
     try {
         const payload = jwt.verify(token, config.jwt.accessSecret);
         req.body.$auth = payload;
 
         return next();
     } catch (err) {
-        return sendResponse(res, apiParams);
+        return sendResponse(res, invalidError);
+    }
+}
+
+export function extractBearerToken(rawToken?: string) {
+    const prefix = 'Bearer ';
+    const isValid = !!rawToken && rawToken.startsWith(prefix);
+
+    if (isValid) {
+        return rawToken.replace(prefix, '');
     }
 }
 
