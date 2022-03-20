@@ -71,10 +71,7 @@ export class Auth {
     async register(req: Request, res: Response) {
         const body = req.body as RegisterType;
 
-        const user = User.create({
-            accessLevel: AccessLevels.CONTRIBUTOR,
-            ...body
-        });
+        const user = User.create({ ...body });
 
         try {
             const foundUser = await User.findOne({

@@ -15,9 +15,9 @@ export type ApiResponseParams<T> = {
  * therefore you don't get help from the autocomplete.
  */
 export function sendResponse<T>(res: Response, params: ApiResponseParams<T>) {
-    const { statusCode, ...newParams } = params;
+    const { statusCode, success, ...newParams } = params;
 
-    const isSuccess = (newParams.success ?? true);
+    const isSuccess = (success ?? true);
     const code = statusCode ?? StatusCodes.OK;
 
     const response = {

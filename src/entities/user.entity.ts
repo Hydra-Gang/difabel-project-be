@@ -1,7 +1,9 @@
 import {
     BaseEntity, Entity,
-    Column, PrimaryGeneratedColumn
+    Column, PrimaryGeneratedColumn,
+    OneToMany
 } from 'typeorm';
+import { Report } from './report.entity';
 
 /**
  * Describes the user's current role
