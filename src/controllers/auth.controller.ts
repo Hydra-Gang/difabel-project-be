@@ -39,8 +39,8 @@ export class Auth {
             }
 
             const isPasswordValid = await bcrypt.compare(
-                foundUser.password,
-                body.password);
+                body.password,
+                foundUser.password);
 
             if (!isPasswordValid) {
                 return sendResponse(res, invalidError);
