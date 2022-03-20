@@ -1,4 +1,5 @@
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+    import { BaseEntity, Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Report } from './report.entity';
 
 /**
  * Describes the user's current role
@@ -30,4 +31,6 @@ export class User extends BaseEntity {
     @Column({ name: 'access_level', type: 'bit' })
     accessLevel!: AccessLevels;
 
+    @OneToMany(() => Report, (report) => report.user)
+    reports!: Report[];
 }
