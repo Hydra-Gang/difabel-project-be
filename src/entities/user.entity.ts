@@ -30,7 +30,11 @@ export class User extends BaseEntity {
     @Column({ length: 64 })
     password!: string;
 
-    @Column({ name: 'access_level', type: 'smallint' })
+    @Column({
+        name: 'access_level',
+        type: 'smallint',
+        default: AccessLevels.CONTRIBUTOR
+    })
     accessLevel!: AccessLevels;
 
 }
