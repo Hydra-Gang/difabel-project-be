@@ -13,7 +13,7 @@ import { StatusCodes } from 'http-status-codes';
 @Route({ path: 'auth' })
 export class Auth {
 
-    @Controller('POST', '/login')
+    // @Controller('POST', '/login')
     async login(req: Request, res: Response) {
         // TODO:
     }
@@ -61,7 +61,7 @@ export class Auth {
         }
     }
 
-    @Controller('POST', '/refresh')
+    // @Controller('POST', '/refresh')
     async refreshToken(req: Request, res: Response) {
         // TODO:
     }
