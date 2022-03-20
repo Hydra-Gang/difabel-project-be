@@ -37,4 +37,7 @@ export class User extends BaseEntity {
     })
     accessLevel!: AccessLevels;
 
+    @OneToMany(() => Report, (report) => report.user)
+    reports!: Report[];
+
 }
