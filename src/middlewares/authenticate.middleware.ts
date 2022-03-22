@@ -1,25 +1,26 @@
 import { NextFunction, Request, Response } from 'express';
+import { AccessLevels } from '../entities/user.entity';
 import { sendResponse, Errors } from '../utils/api.util';
 import { extractFromHeader, TokenType } from '../utils/auth.util';
 
 /**
- * Validates a user authentication
+ * Handles user authentication
+ * This middleware also has the ability to check user's {@link AccessLevels}.
  *
- * The middleware uses {@link jwt.verify} function to verify
- * the user's token and add the payload to `$auth` within {@link req.body}
- *
- * Let's say we have `{ userId: 5 }` as our payload,
- * then to get it from the controller, we do this:
- * ```ts
- * const { userId } = req.body.$auth;
- * ```
+ * @param tokenType the kind of to token should be check
+ * @param permissions the permissions required to access
  */
-function authenticate(tokenType: TokenType = 'ACCESS') {
+function authenticate(
+    tokenType: TokenType = 'ACCESS', ...permissions: AccessLevels[]) {
+
     return (req: Request, res: Response, next: NextFunction) => {
         const payload = extractFromHeader(req, tokenType);
 
         if (!payload) {
             return sendResponse(res, Errors.NO_SESSION_ERROR);
+        }
+        if (!permissions.includes(payload.accessLevel)) {
+            return sendResponse(res, Errors.NO_PERMISSION_ERROR);
         }
 
         return next();
