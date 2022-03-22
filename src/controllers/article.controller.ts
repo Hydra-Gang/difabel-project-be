@@ -17,6 +17,13 @@ import {
     NewArticleType
 } from '../validations/article.validation';
 
+
+const notFoundError: ApiResponseParams<unknown> = {
+    success: false,
+    statusCode: StatusCodes.NOT_FOUND,
+    message: 'Cannot find article'
+};
+
 @Route({ path: 'articles' })
 export class ArticleRoute {
 
@@ -27,6 +34,9 @@ export class ArticleRoute {
     )
     async postArticle(req: Request, res: Response) {
         const { id: userId } = req.body.$auth as UserLike;
+        // TODO: change $auth to a function that load the token?
+        delete req.body.$auth;
+
         const body = req.body as NewArticleType;
 
         let user: User;
@@ -59,12 +69,6 @@ export class ArticleRoute {
     async getArticle(req: Request, res: Response) {
         const { articleId } = req.params;
 
-        const notFoundError: ApiResponseParams<unknown> = {
-            success: false,
-            statusCode: StatusCodes.NOT_FOUND,
-            message: 'Cannot find article'
-        };
-
         let article: Article | undefined;
         try {
             article = await Article.findOne({
@@ -74,11 +78,7 @@ export class ArticleRoute {
             });
 
             if (!article) {
-                return sendResponse(res, {
-                    success: false,
-                    statusCode: StatusCodes.NOT_FOUND,
-                    message: 'Cannot find article'
-                });
+                return sendResponse(res, notFoundError);
             }
         } catch (err) {
             return sendResponse(res, Errors.SERVER_ERROR);
