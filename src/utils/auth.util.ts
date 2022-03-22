@@ -78,6 +78,10 @@ export function extractFromJWT(
             throw Error('Token type is not defined');
     }
 
+    if (tokenType === 'REFRESH' && !REFRESH_TOKEN_LIST.includes(secret)) {
+        return;
+    }
+
     try {
         return jwt.verify(token, secret) as UserPayload;
     } catch (err) {
