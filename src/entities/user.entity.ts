@@ -6,6 +6,8 @@ import {
     OneToMany
 } from 'typeorm';
 
+type AccessLevelType = 'ADMIN' | 'EDITOR' | 'CONTRIBUTOR';
+
 /**
  * Describes the user's current role
  */
@@ -51,5 +53,29 @@ export class User extends BaseEntity {
      */
     @OneToMany(() => Article, (article) => article.approver)
     approvedArticles!: Article[];
+
+    /**
+     * Checks if user has access
+     *
+     * It can check multiple values like the OR operator.
+     * This is meant to save some lines in your code.
+     *
+     * Ex: Does A have 'CONTRIBUTOR' or 'EDITOR' access?
+     */
+    hasAnyAccess(...accessList: AccessLevelType[]): boolean {
+        for (const access of accessList) {
+            const currentAccess = AccessLevels[access];
+
+            if (!currentAccess) {
+                throw Error("Access level isn't defined");
+            }
+
+            if (currentAccess === this.accessLevel) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
 }
