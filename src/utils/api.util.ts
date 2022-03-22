@@ -46,5 +46,10 @@ export const Errors = asErrors({
         success: false,
         statusCode: StatusCodes.UNAUTHORIZED,
         message: "You don't have an account session"
+    },
+    NO_PERMISSION_ERROR: {
+        success: false,
+        statusCode: StatusCodes.FORBIDDEN,
+        message: "You don't have the permission to access this content"
     }
 });
