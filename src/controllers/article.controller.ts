@@ -1,22 +1,19 @@
 import validate from '../middlewares/validate.middleware';
-import authenticate, {
-    extractBearerToken
-} from '../middlewares/authenticate.middleware';
 
 import { Request, Response } from 'express';
 import { Route, Controller } from '../decorators/express.decorator';
-import { UserLike } from '../utils/user.util';
+import { extractFromHeader } from '../utils/auth.util';
 import { User } from '../entities/user.entity';
 import { Article } from '../entities/article.entity';
 import { StatusCodes } from 'http-status-codes';
 import { Errors, sendResponse, ApiResponseParams } from '../utils/api.util';
-import { FindManyOptions } from 'typeorm';
+import authenticate from '../middlewares/authenticate.middleware';
 import {
     articleIdSchema,
     newArticleSchema,
     NewArticleType
 } from '../validations/article.validation';
-
+import { FindManyOptions } from 'typeorm';
 
 const notFoundError: ApiResponseParams<unknown> = {
     success: false,
@@ -29,19 +26,19 @@ export class ArticleRoute {
 
     @Controller(
         'POST', '/',
-        validate(newArticleSchema),
-        authenticate
+        authenticate(), validate(newArticleSchema),
     )
     async postArticle(req: Request, res: Response) {
-        const { id: userId } = req.body.$auth as UserLike;
-        // TODO: change $auth to a function that load the token?
-        delete req.body.$auth;
-
         const body = req.body as NewArticleType;
+        const { id: userId } = extractFromHeader(req)!;
 
-        let user: User;
+        let user: User | undefined;
         try {
-            user = await User.findOne({ where: { id: userId } }) as User;
+            user = await User.findOne({ where: { id: userId } });
+
+            if (!user) {
+                return sendResponse(res, Errors.NO_SESSION_ERROR);
+            }
         } catch (err) {
             return sendResponse(res, Errors.SERVER_ERROR);
         }
@@ -67,24 +64,22 @@ export class ArticleRoute {
 
     @Controller(
         'DELETE', '/:articleId',
-        validate(articleIdSchema, true),
-        authenticate
+        authenticate(), validate(articleIdSchema, true)
     )
     async deleteArticle(req: Request, res: Response) {
-        const { id: userId } = req.body.$auth as UserLike;
-        delete req.body.$auth;
-
+        const { id: userId } = extractFromHeader(req)!;
         const { articleId } = req.params;
-        let article: Article | undefined;
 
         try {
             const user = await User.findOne({ where: { id: userId } });
-            // TODO: only allow editor to delete article
             if (!user) {
                 return sendResponse(res, Errors.NO_SESSION_ERROR);
             }
+            if (!user.hasAnyAccess('EDITOR', 'ADMIN')) {
+                return sendResponse(res, Errors.NO_PERMISSION_ERROR);
+            }
 
-            article = await Article.findOne({
+            const article = await Article.findOne({
                 where: { id: parseInt(articleId) }
             });
 
@@ -107,55 +102,65 @@ export class ArticleRoute {
         const { articleId } = req.params;
 
         let article: Article | undefined;
+        let user: User | undefined;
+
         try {
             article = await Article.findOne({
-                where: {
-                    id: parseInt(articleId)
-                }
+                where: { id: parseInt(articleId) }
             });
 
             if (!article) {
                 return sendResponse(res, notFoundError);
             }
+
+            const payload = extractFromHeader(req);
+            if (payload) {
+                user = await User.findOne({ where: { id: payload.id } });
+            }
         } catch (err) {
             return sendResponse(res, Errors.SERVER_ERROR);
         }
 
-        // TODO: allow editors to view the article
-        if (!article.isApproved) {
-            return sendResponse(res, notFoundError);
-        }
+        const isPermissible = !!user && user.hasAnyAccess('EDITOR', 'ADMIN');
 
         return sendResponse(res, {
             message: 'Article is found',
             data: {
-                article: article.filter()
+                article: (isPermissible ? article : article.filter())
             }
         });
     }
 
     @Controller('GET', '/')
     async getAllArticles(req: Request, res: Response) {
-        const rawToken = req.header('authorization');
-        const token = extractBearerToken(rawToken);
-
         try {
-            let articles: unknown[];
-            const findApproved: FindManyOptions<Article> = {
-                where: { isApproved: true }
-            };
+            const payload = extractFromHeader(req);
+            let user: User | undefined;
+            let output: unknown[];
 
-            // TODO: specifically check for the permission
-            if (!token) {
-                const rawArticles = await Article.find(findApproved);
-                articles = rawArticles.map((article) => article.filter());
+            if (payload) {
+                user = await User.findOne({ where: { id: payload.id } });
+            }
+
+            if (user?.hasAnyAccess('EDITOR', 'ADMIN')) {
+                output = await Article.find();
             } else {
-                articles = await Article.find();
+                const filterOption: FindManyOptions<Article> = {
+                    where: {
+                        isApproved: true,
+                        isDeleted: false
+                    }
+                };
+
+                const articles = await Article.find(filterOption);
+                output = articles.map((article) => article.filter());
             }
 
             return sendResponse(res, {
                 message: 'Found article(s)',
-                data: { articles }
+                data: {
+                    articles: output
+                }
             });
         } catch (err) {
             return sendResponse(res, Errors.SERVER_ERROR);
