@@ -1,9 +1,6 @@
-import jwt from 'jsonwebtoken';
-import config from '../configs/config';
-
 import { NextFunction, Request, Response } from 'express';
 import { sendResponse, Errors } from '../utils/api.util';
-import { extractToken } from '../utils/auth.util';
+import { extractFromHeader, TokenType } from '../utils/auth.util';
 
 /**
  * Validates a user authentication
@@ -17,22 +14,16 @@ import { extractToken } from '../utils/auth.util';
  * const { userId } = req.body.$auth;
  * ```
  */
-function authenticate(req: Request, res: Response, next: NextFunction) {
-    const rawToken = req.header('authorization');
-    const token = extractToken(rawToken);
+function authenticate(tokenType: TokenType = 'ACCESS') {
+    return (req: Request, res: Response, next: NextFunction) => {
+        const payload = extractFromHeader(req, tokenType);
 
-    if (!token) {
-        return sendResponse(res, Errors.NO_SESSION_ERROR);
-    }
-
-    try {
-        const payload = jwt.verify(token, config.jwt.accessSecret);
-        req.body.$auth = payload;
+        if (!payload) {
+            return sendResponse(res, Errors.NO_SESSION_ERROR);
+        }
 
         return next();
-    } catch (err) {
-        return sendResponse(res, Errors.NO_SESSION_ERROR);
-    }
+    };
 }
 
 export default authenticate;

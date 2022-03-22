@@ -1,13 +1,15 @@
 import jwt from 'jsonwebtoken';
 import config from '../configs/config';
 
-import { User } from '../entities/user.entity';
+import { Request } from 'express';
+import { AccessLevels, User } from '../entities/user.entity';
 
 export type TokenType = 'ACCESS' | 'REFRESH';
 
 export type UserPayload = {
     id: number,
-    email: string
+    email: string,
+    accessLevel: AccessLevels
 };
 
 // ------------------------------------------------------------------------ //
@@ -18,10 +20,6 @@ export type UserPayload = {
 export const REFRESH_TOKEN_LIST: string[] = [];
 
 // ------------------------------------------------------------------------ //
-
-export function createPayload(user: User | UserPayload) {
-    return { id: user.id, email: user.email };
-}
 
 export function generateToken(user: User | UserPayload, tokenType: TokenType) {
     if (tokenType !== 'ACCESS' && tokenType !== 'REFRESH') {
@@ -39,14 +37,61 @@ export function generateToken(user: User | UserPayload, tokenType: TokenType) {
         signOption.expiresIn = config.jwt.refreshExpire;
     }
 
-    return jwt.sign(createPayload(user), tokenSecret, signOption);
+    const userPayload: UserPayload = {
+        id: user.id,
+        email: user.email,
+        accessLevel: user.accessLevel
+    };
+
+    return jwt.sign(userPayload, tokenSecret, signOption);
 }
 
-export function extractToken(rawToken?: string) {
-    const prefix = 'Bearer ';
-    const isValid = !!rawToken && rawToken.startsWith(prefix);
+/**
+ * Extracts the user's payload from the JWT.
+ *
+ * With this, we don't need to validate the token manually
+ * and instead can focus with the payload content.
+ *
+ * @returns An `undefined` when invalid,
+ *          otherwise you'll get {@link UserPayload}
+ * @throws If you input the incorrect {@link TokenType}
+ */
+export function extractFromJWT(
+    rawToken: string | undefined, tokenType: TokenType = 'ACCESS') {
 
-    if (isValid) {
-        return rawToken.replace(prefix, '');
+    const prefix = 'Bearer ';
+    if (!rawToken || !rawToken.startsWith(prefix)) {
+        return;
     }
+
+    const token = rawToken.replace(prefix, '');
+    let secret: string;
+
+    switch (tokenType) {
+        case 'ACCESS':
+            secret = config.jwt.accessSecret;
+            break;
+        case 'REFRESH':
+            secret = config.jwt.refreshSecret;
+            break;
+        default:
+            throw Error('Token type is not defined');
+    }
+
+    try {
+        return jwt.verify(token, secret) as UserPayload;
+    } catch (err) {
+        // do nothing
+    }
+}
+
+/**
+ * Save an extra line with extracting the header from {@link Request}.
+ *
+ * @see {@link extractFromJWT}
+ */
+export function extractFromHeader(
+    req: Request, tokenType: TokenType = 'ACCESS') {
+
+    return extractFromJWT(req.header('authorization'), tokenType);
 }
