@@ -67,11 +67,11 @@ export class ArticleRoute {
         authenticate(), validate(articleIdSchema, true)
     )
     async deleteArticle(req: Request, res: Response) {
-        const { id: userId } = extractFromHeader(req)!;
+        const payload = extractFromHeader(req)!;
         const { articleId } = req.params;
 
         try {
-            const user = await User.findOne({ where: { id: userId } });
+            const user = await User.findOne({ where: { id: payload.id } });
             if (!user) {
                 return sendResponse(res, Errors.NO_SESSION_ERROR);
             }
@@ -87,11 +87,14 @@ export class ArticleRoute {
                 return sendResponse(res, notFoundError);
             }
 
-            await Article.delete(article);
+            article.isDeleted = true;
+            await Article.save(article);
+
             return sendResponse(res, {
                 message: 'Successfully deleted article'
             });
         } catch (err) {
+            console.log(err);
             return sendResponse(res, Errors.SERVER_ERROR);
         }
 
@@ -105,6 +108,11 @@ export class ArticleRoute {
         let user: User | undefined;
 
         try {
+            const payload = extractFromHeader(req);
+            if (payload) {
+                user = await User.findOne({ where: { id: payload.id } });
+            }
+
             article = await Article.findOne({
                 where: { id: parseInt(articleId) }
             });
@@ -112,16 +120,14 @@ export class ArticleRoute {
             if (!article) {
                 return sendResponse(res, notFoundError);
             }
-
-            const payload = extractFromHeader(req);
-            if (payload) {
-                user = await User.findOne({ where: { id: payload.id } });
-            }
         } catch (err) {
             return sendResponse(res, Errors.SERVER_ERROR);
         }
 
         const isPermissible = !!user && user.hasAnyAccess('EDITOR', 'ADMIN');
+        if (!isPermissible && (!article.isApproved || article.isDeleted)) {
+            return sendResponse(res, notFoundError);
+        }
 
         return sendResponse(res, {
             message: 'Article is found',
