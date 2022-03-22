@@ -66,7 +66,7 @@ export class User extends BaseEntity {
         for (const access of accessList) {
             const currentAccess = AccessLevels[access];
 
-            if (!currentAccess) {
+            if (typeof currentAccess !== 'number') {
                 throw Error("Access level isn't defined");
             }
 
