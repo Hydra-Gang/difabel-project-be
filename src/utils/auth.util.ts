@@ -2,15 +2,14 @@ import jwt from 'jsonwebtoken';
 import config from '../configs/config';
 
 import { Request } from 'express';
-import { AccessLevels, User } from '../entities/user.entity';
+import { User } from '../entities/user.entity';
 
 export type TokenType = 'ACCESS' | 'REFRESH';
 
 export type UserPayload = {
     id: number,
-    email: string,
-    accessLevel: AccessLevels
-};
+    email: string
+}
 
 // ------------------------------------------------------------------------ //
 
@@ -26,8 +25,9 @@ export function generateToken(user: User | UserPayload, tokenType: TokenType) {
         throw Error('Token type is not defined');
     }
 
-    let tokenSecret: string;
     const signOption: jwt.SignOptions = { notBefore: config.jwt.notBefore };
+    const payload: UserPayload = { id: user.id, email: user.email };
+    let tokenSecret: string;
 
     if (tokenType === 'ACCESS') {
         tokenSecret = config.jwt.accessSecret;
@@ -37,13 +37,7 @@ export function generateToken(user: User | UserPayload, tokenType: TokenType) {
         signOption.expiresIn = config.jwt.refreshExpire;
     }
 
-    const userPayload: UserPayload = {
-        id: user.id,
-        email: user.email,
-        accessLevel: user.accessLevel
-    };
-
-    return jwt.sign(userPayload, tokenSecret, signOption);
+    return jwt.sign(payload, tokenSecret, signOption);
 }
 
 /**
