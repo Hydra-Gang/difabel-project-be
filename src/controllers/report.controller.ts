@@ -61,8 +61,8 @@ export class ReportRoute {
 
     @Controller('PUT', '/status-update/:reportId', authenticate)
     async updateReportStatus(req: Request, res: Response) {
-        const reportId = req.params.reportId;
-        const userId = req.body.$auth;
+        const reportId = parseInt(req.params.reportId);
+        const userId = req.body.$auth.id;
 
         let report;
 
