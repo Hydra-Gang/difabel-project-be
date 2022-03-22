@@ -1,9 +1,10 @@
+import { Article } from './article.entity';
+import { Report } from './report.entity';
 import {
     BaseEntity, Entity,
     Column, PrimaryGeneratedColumn,
     OneToMany
 } from 'typeorm';
-import { Report } from './report.entity';
 
 /**
  * Describes the user's current role
@@ -41,5 +42,14 @@ export class User extends BaseEntity {
 
     @OneToMany(() => Report, (report) => report.user)
     reports!: Report[];
+
+    @OneToMany(() => Article, (article) => article.author)
+    articles!: Article[];
+
+    /**
+     * The articles approved by current user
+     */
+    @OneToMany(() => Article, (article) => article.approver)
+    approvedArticles!: Article[];
 
 }

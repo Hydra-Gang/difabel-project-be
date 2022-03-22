@@ -8,6 +8,14 @@ export type ApiResponseParams<T> = {
     data?: T
 }
 
+export type ErrorResponseList = {
+    [key: string]: ApiResponseParams<unknown>
+}
+
+export function asErrors<T extends ErrorResponseList>(obj: T) {
+    return obj;
+}
+
 /**
  * Sends response
  *
@@ -27,3 +35,16 @@ export function sendResponse<T>(res: Response, params: ApiResponseParams<T>) {
 
     return res.status(code).json(response);
 }
+
+export const Errors = asErrors({
+    SERVER_ERROR: {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        success: false,
+        message: 'Unexpected server error'
+    },
+    NO_SESSION_ERROR: {
+        success: false,
+        statusCode: StatusCodes.UNAUTHORIZED,
+        message: "You don't have an account session"
+    }
+});
