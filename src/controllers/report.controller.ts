@@ -1,19 +1,22 @@
+import authenticate from '../middlewares/authenticate.middleware';
+import validate from '../middlewares/validate.middleware';
+
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { Controller, Route } from '../decorators/express.decorator';
 import { Report, ReportStatuses } from '../entities/report.entity';
 import { User } from '../entities/user.entity';
-import authenticate from '../middlewares/authenticate.middleware';
-import validate from '../middlewares/validate.middleware';
-import { sendResponse } from '../utils/api.util';
+import { Errors, sendResponse } from '../utils/api.util';
+import { extractFromHeader } from '../utils/auth.util';
 import {
-    newReportSchema, NewReportType
+    newReportSchema,
+    NewReportType
 } from '../validations/report.validation';
 
 @Route({ path: 'reports' })
 export class ReportRoute {
 
-    @Controller('GET', '/', authenticate)
+    @Controller('GET', '/', authenticate())
     async getReports(req: Request, res: Response) {
         try {
             const reports = await Report.find();
@@ -25,15 +28,11 @@ export class ReportRoute {
                 }
             });
         } catch (error) {
-            sendResponse(res, {
-                success: false,
-                statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-                message: 'Unexpected server error'
-            });
+            sendResponse(res, Errors.SERVER_ERROR);
         }
     }
 
-    @Controller('POST', '/add', validate(newReportSchema))
+    @Controller('POST', '/add', authenticate(), validate(newReportSchema))
     async addReport(req: Request, res: Response) {
         const body = req.body as NewReportType;
 
@@ -51,21 +50,16 @@ export class ReportRoute {
                 message: 'Successfully added report'
             });
         } catch (error) {
-            return sendResponse(res, {
-                success: false,
-                statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-                message: 'Unexpected server error'
-            });
+            return sendResponse(res, Errors.SERVER_ERROR);
         }
     }
 
-    @Controller('PUT', '/status-update/:reportId', authenticate)
+    @Controller('PUT', '/status-update/:reportId', authenticate())
     async updateReportStatus(req: Request, res: Response) {
         const reportId = parseInt(req.params.reportId);
-        const userId = req.body.$auth.id;
+        const payload = extractFromHeader(req)!;
 
         let report;
-
         try {
             report = await Report.findOne({
                 where: {
@@ -82,14 +76,10 @@ export class ReportRoute {
                 });
             }
         } catch (error) {
-            return sendResponse(res, {
-                success: false,
-                statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-                message: 'Unexpected server error'
-            });
+            return sendResponse(res, Errors.SERVER_ERROR);
         }
 
-        const user = await User.findOne({ where: { id: userId } });
+        const user = await User.findOne({ where: { id: payload.id } });
 
         report.updatedAt = new Date();
         report.status = ReportStatuses.RESOLVED;
@@ -102,11 +92,7 @@ export class ReportRoute {
                 message: 'Successfully mark the report status as resolved'
             });
         } catch (error) {
-            sendResponse(res, {
-                success: false,
-                statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-                message: 'Unexpected server error'
-            });
+            return sendResponse(res, Errors.SERVER_ERROR);
         }
     }
 
