@@ -79,7 +79,8 @@ export class ArticleRoute {
 
         try {
             const user = await User.findOne({ where: { id: userId } });
-            if (!user || user.accessLevel !== AccessLevels.EDITOR) {
+            // TODO: only allow editor to delete article
+            if (!user) {
                 return sendResponse(res, Errors.NO_SESSION_ERROR);
             }
 
