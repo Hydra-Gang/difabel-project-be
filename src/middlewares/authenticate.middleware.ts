@@ -1,5 +1,4 @@
 import { NextFunction, Request, Response } from 'express';
-import { AccessLevels } from '../entities/user.entity';
 import { sendResponse, Errors } from '../utils/api.util';
 import { extractFromHeader, TokenType } from '../utils/auth.util';
 
@@ -11,16 +10,12 @@ import { extractFromHeader, TokenType } from '../utils/auth.util';
  * @param permissions the permissions required to access
  */
 function authenticate(
-    tokenType: TokenType = 'ACCESS', ...permissions: AccessLevels[]) {
+    tokenType: TokenType = 'ACCESS') {
 
     return (req: Request, res: Response, next: NextFunction) => {
         const payload = extractFromHeader(req, tokenType);
-
         if (!payload) {
             return sendResponse(res, Errors.NO_SESSION_ERROR);
-        }
-        if (!permissions.includes(payload.accessLevel)) {
-            return sendResponse(res, Errors.NO_PERMISSION_ERROR);
         }
 
         return next();
