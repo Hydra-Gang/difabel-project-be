@@ -10,6 +10,7 @@ import { User } from '../entities/user.entity';
 import { Article } from '../entities/article.entity';
 import { StatusCodes } from 'http-status-codes';
 import { Errors, sendResponse, ApiResponseParams } from '../utils/api.util';
+import { FindManyOptions } from 'typeorm';
 import {
     articleIdSchema,
     newArticleSchema,
@@ -20,10 +21,9 @@ import {
 export class ArticleRoute {
 
     @Controller(
-        'POST',
-        '/post',
-        authenticate,
-        validate(newArticleSchema)
+        'POST', '/',
+        validate(newArticleSchema),
+        authenticate
     )
     async postArticle(req: Request, res: Response) {
         const { id: userId } = req.body.$auth as UserLike;
@@ -102,10 +102,26 @@ export class ArticleRoute {
         const rawToken = req.header('authorization');
         const token = extractBearerToken(rawToken);
 
-        if (!token) {
-            // TODO: give all approved articles
-        } else {
-            // TODO: give all articles
+        try {
+            let articles: unknown[];
+            const findApproved: FindManyOptions<Article> = {
+                where: { isApproved: true }
+            };
+
+            // TODO: specifically check for the permission
+            if (!token) {
+                const rawArticles = await Article.find(findApproved);
+                articles = rawArticles.map((article) => article.filter());
+            } else {
+                articles = await Article.find();
+            }
+
+            return sendResponse(res, {
+                message: 'Found article(s)',
+                data: { articles }
+            });
+        } catch (err) {
+            return sendResponse(res, Errors.SERVER_ERROR);
         }
     }
 
