@@ -11,7 +11,10 @@
         "forceConsistentCasingInFileNames": true,
         "noFallthroughCasesInSwitch": true,
         "experimentalDecorators": true,
-        "emitDecoratorMetadata": true
+        "emitDecoratorMetadata": true,
+        // makes the ts compiler faster
+        // but the ts check is not that accurate
+        "skipLibCheck": true
     },
     "include": [
         "./src/**/*"
