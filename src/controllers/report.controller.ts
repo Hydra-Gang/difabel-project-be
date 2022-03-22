@@ -67,7 +67,12 @@ export class ReportRoute {
         let report;
 
         try {
-            report = await Report.findOne({ where: { id: reportId } });
+            report = await Report.findOne({
+                where: {
+                    id: reportId,
+                    status: ReportStatuses.PENDING
+                }
+            });
 
             if (!report) {
                 return sendResponse(res, {
