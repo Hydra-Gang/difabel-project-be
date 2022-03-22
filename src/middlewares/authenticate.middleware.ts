@@ -3,6 +3,7 @@ import config from '../configs/config';
 
 import { NextFunction, Request, Response } from 'express';
 import { sendResponse, Errors } from '../utils/api.util';
+import { extractToken } from '../utils/user.util';
 
 /**
  * Validates a user authentication
@@ -18,7 +19,7 @@ import { sendResponse, Errors } from '../utils/api.util';
  */
 function authenticate(req: Request, res: Response, next: NextFunction) {
     const rawToken = req.header('authorization');
-    const token = extractBearerToken(rawToken);
+    const token = extractToken(rawToken);
 
     if (!token) {
         return sendResponse(res, Errors.NO_SESSION_ERROR);
@@ -31,15 +32,6 @@ function authenticate(req: Request, res: Response, next: NextFunction) {
         return next();
     } catch (err) {
         return sendResponse(res, Errors.NO_SESSION_ERROR);
-    }
-}
-
-export function extractBearerToken(rawToken?: string) {
-    const prefix = 'Bearer ';
-    const isValid = !!rawToken && rawToken.startsWith(prefix);
-
-    if (isValid) {
-        return rawToken.replace(prefix, '');
     }
 }
 
