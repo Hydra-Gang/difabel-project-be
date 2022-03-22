@@ -1,19 +1,18 @@
 import bcrypt from 'bcrypt';
 import validate from '../middlewares/validate.middleware';
 import config from '../configs/config';
-import jwt from 'jsonwebtoken';
+import authenticate from '../middlewares/authenticate.middleware';
 
 import { Request, Response } from 'express';
 import { Controller, Route } from '../decorators/express.decorator';
 import { User } from '../entities/user.entity';
 import { ApiResponseParams, Errors, sendResponse } from '../utils/api.util';
 import { StatusCodes } from 'http-status-codes';
-import { extractBearerToken } from '../middlewares/authenticate.middleware';
 import {
-    genAccessToken,
-    genRefreshToken,
-    REFRESH_TOKEN_LIST, UserLike
-} from '../utils/user.util';
+    generateToken,
+    extractFromHeader,
+    REFRESH_TOKEN_LIST
+} from '../utils/auth.util';
 import {
     loginSchema, registerSchema,
     LoginType, RegisterType
@@ -54,8 +53,8 @@ export class Auth {
             return sendResponse(res, {
                 message: 'Successfully logged in as a user',
                 data: {
-                    accessToken: genAccessToken(foundUser),
-                    refreshToken: genRefreshToken(foundUser)
+                    accessToken: generateToken(foundUser, 'ACCESS'),
+                    refreshToken: generateToken(foundUser, 'REFRESH')
                 }
             });
         } catch (err) {
@@ -66,7 +65,6 @@ export class Auth {
     @Controller('POST', '/register', validate(registerSchema))
     async register(req: Request, res: Response) {
         const body = req.body as RegisterType;
-
         const user = User.create({ ...body });
 
         try {
@@ -99,50 +97,29 @@ export class Auth {
         }
     }
 
-    @Controller('POST', '/refresh')
+    @Controller('POST', '/refresh', authenticate('REFRESH'))
     async refreshToken(req: Request, res: Response) {
-        const rawToken = req.header('authorization');
-        const token = extractBearerToken(rawToken);
+        const userPayload = extractFromHeader(req, 'REFRESH')!;
 
-        if (!token || !REFRESH_TOKEN_LIST.includes(token)) {
-            return sendResponse(res, Errors.NO_SESSION_ERROR);
-        }
-
-        try {
-            const decoded = jwt.verify(token, config.jwt.refreshSecret);
-            return sendResponse(res, {
-                message: 'Successfully refreshed new token',
-                data: {
-                    accessToken: genAccessToken(decoded as UserLike)
-                }
-            });
-        } catch (err) {
-            return sendResponse(res, Errors.NO_SESSION_ERROR);
-        }
+        return sendResponse(res, {
+            message: 'Successfully refreshed new token',
+            data: {
+                accessToken: generateToken(userPayload, 'ACCESS')
+            }
+        });
     }
 
-    @Controller('DELETE', '/logout')
+    @Controller('DELETE', '/logout', authenticate('REFRESH'))
     async logout(req: Request, res: Response) {
-        const rawToken = req.header('authorization');
-        const token = extractBearerToken(rawToken);
+        const token = req.header('authorization')!.replace('Bearer ', '');
+        const idx = REFRESH_TOKEN_LIST.indexOf(token);
 
-        if (!token || !REFRESH_TOKEN_LIST.includes(token)) {
-            return sendResponse(res, Errors.NO_SESSION_ERROR);
-        }
+        REFRESH_TOKEN_LIST.splice(idx);
 
-        try {
-            jwt.verify(token, config.jwt.refreshSecret);
-
-            const idx = REFRESH_TOKEN_LIST.indexOf(token);
-            REFRESH_TOKEN_LIST.splice(idx);
-
-            return sendResponse(res, {
-                statusCode: StatusCodes.ACCEPTED,
-                message: 'Successfully logged out'
-            });
-        } catch (err) {
-            return sendResponse(res, Errors.NO_SESSION_ERROR);
-        }
+        return sendResponse(res, {
+            statusCode: StatusCodes.ACCEPTED,
+            message: 'Successfully logged out'
+        });
     }
 
 }
