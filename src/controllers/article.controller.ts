@@ -6,7 +6,7 @@ import authenticate, {
 import { Request, Response } from 'express';
 import { Route, Controller } from '../decorators/express.decorator';
 import { UserLike } from '../utils/user.util';
-import { AccessLevels, User } from '../entities/user.entity';
+import { User } from '../entities/user.entity';
 import { Article } from '../entities/article.entity';
 import { StatusCodes } from 'http-status-codes';
 import { Errors, sendResponse, ApiResponseParams } from '../utils/api.util';
