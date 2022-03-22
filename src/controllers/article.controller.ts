@@ -6,7 +6,7 @@ import authenticate, {
 import { Request, Response } from 'express';
 import { Route, Controller } from '../decorators/express.decorator';
 import { UserLike } from '../utils/user.util';
-import { User } from '../entities/user.entity';
+import { AccessLevels, User } from '../entities/user.entity';
 import { Article } from '../entities/article.entity';
 import { StatusCodes } from 'http-status-codes';
 import { Errors, sendResponse, ApiResponseParams } from '../utils/api.util';
@@ -63,6 +63,42 @@ export class ArticleRoute {
         } catch (err) {
             return sendResponse(res, Errors.SERVER_ERROR);
         }
+    }
+
+    @Controller(
+        'DELETE', '/:articleId',
+        validate(articleIdSchema, true),
+        authenticate
+    )
+    async deleteArticle(req: Request, res: Response) {
+        const { id: userId } = req.body.$auth as UserLike;
+        delete req.body.$auth;
+
+        const { articleId } = req.params;
+        let article: Article | undefined;
+
+        try {
+            const user = await User.findOne({ where: { id: userId } });
+            if (!user || user.accessLevel !== AccessLevels.EDITOR) {
+                return sendResponse(res, Errors.NO_SESSION_ERROR);
+            }
+
+            article = await Article.findOne({
+                where: { id: parseInt(articleId) }
+            });
+
+            if (!article) {
+                return sendResponse(res, notFoundError);
+            }
+
+            await Article.delete(article);
+            return sendResponse(res, {
+                message: 'Successfully deleted article'
+            });
+        } catch (err) {
+            return sendResponse(res, Errors.SERVER_ERROR);
+        }
+
     }
 
     @Controller('GET', '/:articleId', validate(articleIdSchema, true))
