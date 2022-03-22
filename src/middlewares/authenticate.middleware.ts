@@ -3,7 +3,7 @@ import config from '../configs/config';
 
 import { NextFunction, Request, Response } from 'express';
 import { sendResponse, Errors } from '../utils/api.util';
-import { extractToken } from '../utils/user.util';
+import { extractToken } from '../utils/auth.util';
 
 /**
  * Validates a user authentication
