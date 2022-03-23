@@ -37,7 +37,12 @@ export function generateToken(user: User | UserPayload, tokenType: TokenType) {
         signOption.expiresIn = config.jwt.refreshExpire;
     }
 
-    return jwt.sign(payload, tokenSecret, signOption);
+    const token = jwt.sign(payload, tokenSecret, signOption);
+    if (tokenType === 'REFRESH') {
+        REFRESH_TOKEN_LIST.push(token);
+    }
+
+    return token;
 }
 
 /**
@@ -72,14 +77,14 @@ export function extractFromJWT(
             throw Error('Token type is not defined');
     }
 
-    if (tokenType === 'REFRESH' && !REFRESH_TOKEN_LIST.includes(secret)) {
+    if (tokenType === 'REFRESH' && !REFRESH_TOKEN_LIST.includes(token)) {
         return;
     }
 
     try {
         return jwt.verify(token, secret) as UserPayload;
     } catch (err) {
-        // do nothing
+        // do nothing to prevent error
     }
 }
 
