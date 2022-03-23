@@ -22,11 +22,12 @@ function validate(schema: ObjectSchema, isParams = false) {
             targetToValidate = req.body;
         }
 
-        const { error } = schema.validate(targetToValidate);
+        const { value, error } = schema.validate(targetToValidate);
         if (error) {
             throw new ResponseError(error.message, StatusCodes.BAD_REQUEST);
         }
 
+        req.body = value;
         return next();
     };
 }
