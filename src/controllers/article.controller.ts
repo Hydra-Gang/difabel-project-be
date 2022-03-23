@@ -1,4 +1,5 @@
 import validate from '../middlewares/validate.middleware';
+import authenticate from '../middlewares/authenticate.middleware';
 
 import { Request, Response } from 'express';
 import { Route, Controller } from '../decorators/express.decorator';
@@ -6,20 +7,17 @@ import { extractFromHeader } from '../utils/auth.util';
 import { User } from '../entities/user.entity';
 import { Article } from '../entities/article.entity';
 import { StatusCodes } from 'http-status-codes';
-import { Errors, sendResponse, ApiResponseParams } from '../utils/api.util';
-import authenticate from '../middlewares/authenticate.middleware';
+import { Errors, ResponseError, sendResponse } from '../utils/api.util';
+import { FindManyOptions } from 'typeorm';
 import {
     articleIdSchema,
     newArticleSchema,
     NewArticleType
 } from '../validations/article.validation';
-import { FindManyOptions } from 'typeorm';
 
-const notFoundError: ApiResponseParams<unknown> = {
-    success: false,
-    statusCode: StatusCodes.NOT_FOUND,
-    message: 'Cannot find article'
-};
+const ARTICLE_NOT_FOUND = new ResponseError(
+    'Cannot find article',
+    StatusCodes.NOT_FOUND);
 
 @Route({ path: 'articles' })
 export class ArticleRoute {
@@ -32,34 +30,18 @@ export class ArticleRoute {
         const body = req.body as NewArticleType;
         const { id: userId } = extractFromHeader(req)!;
 
-        let user: User | undefined;
-        try {
-            user = await User.findOne({ where: { id: userId } });
-
-            if (!user) {
-                return sendResponse(res, Errors.NO_SESSION_ERROR);
-            }
-        } catch (err) {
-            return sendResponse(res, Errors.SERVER_ERROR);
+        const user = await User.findOne({ where: { id: userId } });
+        if (!user) {
+            throw Errors.NO_SESSION;
         }
 
-        const article = Article.create({
-            author: user,
-            ...body
+        const article = Article.create({ author: user, ...body });
+        await Article.save(article);
+
+        return sendResponse(res, {
+            message: 'Successfully created new article',
+            data: { articleId: article.id }
         });
-
-        try {
-            await Article.save(article);
-
-            return sendResponse(res, {
-                message: 'Successfully created new article',
-                data: {
-                    articleId: article.id
-                }
-            });
-        } catch (err) {
-            return sendResponse(res, Errors.SERVER_ERROR);
-        }
     }
 
     @Controller(
@@ -70,63 +52,50 @@ export class ArticleRoute {
         const payload = extractFromHeader(req)!;
         const { articleId } = req.params;
 
-        try {
-            const user = await User.findOne({ where: { id: payload.id } });
-            if (!user) {
-                return sendResponse(res, Errors.NO_SESSION_ERROR);
-            }
-            if (!user.hasAnyAccess('EDITOR', 'ADMIN')) {
-                return sendResponse(res, Errors.NO_PERMISSION_ERROR);
-            }
-
-            const article = await Article.findOne({
-                where: { id: parseInt(articleId) }
-            });
-
-            if (!article) {
-                return sendResponse(res, notFoundError);
-            }
-
-            article.isDeleted = true;
-            await Article.save(article);
-
-            return sendResponse(res, {
-                message: 'Successfully deleted article'
-            });
-        } catch (err) {
-            console.log(err);
-            return sendResponse(res, Errors.SERVER_ERROR);
+        const user = await User.findOne({ where: { id: payload.id } });
+        if (!user) {
+            throw Errors.NO_SESSION;
+        }
+        if (!user.hasAnyAccess('EDITOR', 'ADMIN')) {
+            throw Errors.NO_PERMISSION;
         }
 
+        const article = await Article.findOne({
+            where: { id: parseInt(articleId) }
+        });
+
+        if (!article) {
+            throw ARTICLE_NOT_FOUND;
+        }
+
+        article.isDeleted = true;
+        await Article.save(article);
+
+        return sendResponse(res, { message: 'Successfully deleted article' });
     }
 
     @Controller('GET', '/:articleId', validate(articleIdSchema, true))
     async getArticle(req: Request, res: Response) {
         const { articleId } = req.params;
 
-        let article: Article | undefined;
         let user: User | undefined;
+        const payload = extractFromHeader(req);
 
-        try {
-            const payload = extractFromHeader(req);
-            if (payload) {
-                user = await User.findOne({ where: { id: payload.id } });
-            }
+        if (payload) {
+            user = await User.findOne({ where: { id: payload.id } });
+        }
 
-            article = await Article.findOne({
-                where: { id: parseInt(articleId) }
-            });
+        const article = await Article.findOne({
+            where: { id: parseInt(articleId) }
+        });
 
-            if (!article) {
-                return sendResponse(res, notFoundError);
-            }
-        } catch (err) {
-            return sendResponse(res, Errors.SERVER_ERROR);
+        if (!article) {
+            throw ARTICLE_NOT_FOUND;
         }
 
         const isPermissible = !!user && user.hasAnyAccess('EDITOR', 'ADMIN');
         if (!isPermissible && (!article.isApproved || article.isDeleted)) {
-            return sendResponse(res, notFoundError);
+            throw ARTICLE_NOT_FOUND;
         }
 
         return sendResponse(res, {
@@ -139,38 +108,32 @@ export class ArticleRoute {
 
     @Controller('GET', '/')
     async getAllArticles(req: Request, res: Response) {
-        try {
-            const payload = extractFromHeader(req);
-            let user: User | undefined;
-            let output: unknown[];
+        const payload = extractFromHeader(req);
+        let user: User | undefined;
+        let output: unknown[];
 
-            if (payload) {
-                user = await User.findOne({ where: { id: payload.id } });
-            }
-
-            if (user?.hasAnyAccess('EDITOR', 'ADMIN')) {
-                output = await Article.find();
-            } else {
-                const filterOption: FindManyOptions<Article> = {
-                    where: {
-                        isApproved: true,
-                        isDeleted: false
-                    }
-                };
-
-                const articles = await Article.find(filterOption);
-                output = articles.map((article) => article.filter());
-            }
-
-            return sendResponse(res, {
-                message: 'Found article(s)',
-                data: {
-                    articles: output
-                }
-            });
-        } catch (err) {
-            return sendResponse(res, Errors.SERVER_ERROR);
+        if (payload) {
+            user = await User.findOne({ where: { id: payload.id } });
         }
+
+        if (user?.hasAnyAccess('EDITOR', 'ADMIN')) {
+            output = await Article.find();
+        } else {
+            const filterOption: FindManyOptions<Article> = {
+                where: {
+                    isApproved: true,
+                    isDeleted: false
+                }
+            };
+
+            const articles = await Article.find(filterOption);
+            output = articles.map((article) => article.filter());
+        }
+
+        return sendResponse(res, {
+            message: 'Found article(s)',
+            data: { articles: output }
+        });
     }
 
 }
