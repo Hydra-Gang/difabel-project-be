@@ -19,7 +19,7 @@ import {
 } from '../validations/user.validations';
 
 @Route({ path: 'auth' })
-export class Auth {
+export class AuthRoute {
 
     @Controller('POST', '/login', validate(loginSchema))
     async login(req: Request, res: Response) {
