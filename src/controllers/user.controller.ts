@@ -6,8 +6,8 @@ import { User } from '../entities/user.entity';
 import { sendResponse, Errors } from '../utils/api.util';
 import { extractFromHeader } from '../utils/auth.util';
 
-@Route({ path: 'user' })
-export class Auth {
+@Route({ path: 'users' })
+export class UserRoute {
 
     @Controller('GET', '/', authenticate())
     async getUser(req: Request, res: Response) {
