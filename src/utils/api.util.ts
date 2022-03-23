@@ -1,15 +1,15 @@
 import { Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
-export type ApiResponseParams<T> = {
-    statusCode?: number,
+export type APIResponse<T = unknown> = {
+    statusCode?: StatusCodes,
     success?: boolean,
     message: string,
     data?: T
 }
 
 export type ErrorResponseList = {
-    [key: string]: ApiResponseParams<unknown>
+    [key: string]: APIResponse<unknown>
 }
 
 export function asErrors<T extends ErrorResponseList>(obj: T) {
@@ -22,7 +22,7 @@ export function asErrors<T extends ErrorResponseList>(obj: T) {
  * The usual way doesn't have any template to sending responses,
  * therefore you don't get help from the autocomplete.
  */
-export function sendResponse<T>(res: Response, params: ApiResponseParams<T>) {
+export function sendResponse<T>(res: Response, params: APIResponse<T>) {
     const { statusCode, success, ...newParams } = params;
 
     const isSuccess = (success ?? true);
