@@ -42,11 +42,20 @@ export const loginSchema = joi.object({
         .email()
         .required(),
 
-    password: passwordSchema
+    password: joi.string()
+        .min(8)
+        .max(64)
         .required()
 }) as ObjectSchema<LoginType>;
 
-export const registerSchema = loginSchema.append({
+export const registerSchema = joi.object({
+    email: joi.string()
+        .max(64)
+        .email()
+        .required(),
+
+    password: passwordSchema.required(),
+
     fullName: joi.string()
         .max(64)
         .required(),
