@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import { sendResponse, Errors } from '../utils/api.util';
+import { Errors } from '../utils/api.util';
 import { extractFromHeader, TokenType } from '../utils/auth.util';
 
 /**
@@ -15,7 +15,7 @@ function authenticate(
     return (req: Request, res: Response, next: NextFunction) => {
         const payload = extractFromHeader(req, tokenType);
         if (!payload) {
-            return sendResponse(res, Errors.NO_SESSION_ERROR);
+            throw Errors.NO_SESSION;
         }
 
         return next();

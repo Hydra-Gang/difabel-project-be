@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { sendResponse } from '../utils/api.util';
+import { ResponseError } from '../utils/api.util';
 import { ObjectSchema } from 'joi';
 
 /**
@@ -13,7 +13,7 @@ import { ObjectSchema } from 'joi';
  *          within the {@link Request request}.
  */
 function validate(schema: ObjectSchema, isParams = false) {
-    return (req: Request, res: Response, next: NextFunction) => {
+    return (req: Request, _: Response, next: NextFunction) => {
         let targetToValidate;
 
         if (isParams) {
@@ -22,13 +22,9 @@ function validate(schema: ObjectSchema, isParams = false) {
             targetToValidate = req.body;
         }
 
-        const result = schema.validate(targetToValidate);
-        if (result.error) {
-            return sendResponse(res, {
-                success: false,
-                statusCode: StatusCodes.BAD_REQUEST,
-                message: result.error.message
-            });
+        const { error } = schema.validate(targetToValidate);
+        if (error) {
+            throw new ResponseError(error.message, StatusCodes.BAD_REQUEST);
         }
 
         return next();
