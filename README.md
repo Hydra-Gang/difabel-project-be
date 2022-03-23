@@ -34,7 +34,7 @@ Backend of the difabel project. This project is using the project template from 
     * It's [more secure](https://stackoverflow.com/a/38855050) when compared to _Cookie and Session_.
 
 ## Quick Start
-1. Make sure you have installed [yarn](https://classic.yarnpkg.com/lang/en/).
+1. Make sure you have installed [yarn](https://classic.yarnpkg.com/lang/en/) and [PostgreSQL](https://www.postgresql.org/download/).
 1. Clone the repo
    ```sh
    git clone https://github.com/Hydra-Gang/difable-project-be.git
@@ -52,6 +52,29 @@ Backend of the difabel project. This project is using the project template from 
    ```sh
    yarn auto
    ```
+
+## Project Structure
+```
+<your project>\
+ |--scripts\             # User scripts for automating
+ |--src\                 # Source folder
+     |--configs\         # Application configs
+     |--controllers\     # Route controllers
+     |--decorators\      # Custom decorators
+     |--entities\        # Database models/entities (represents table)
+     |--middlewares\     # Custom middlewares
+     |--routes\          # Server routes, provides automatic routing
+     |--typings\         # Custom types/interface for type assertion
+     |--utils\           # Utility classes and functions
+         |--api.util.ts  # Server response utility
+     |--validations\     # Schemas for validating JSON
+     |--app.ts           # Express app and it's configuration
+     |--ormconfig.ts     # TypeORM config
+     |--server.ts        # Program entry point (db connection is also here)
+ |--.eslintrc.json       # ESLint config
+ |--tsconfig.json        # TypeScript compiler config
+ |--...
+```
 
 ## Commands
 Running:
@@ -110,27 +133,4 @@ DB_HOST=
 DB_DATABASE=
 DB_USERNAME=
 DB_PASSWORD=
-```
-
-## Project Structure
-```
-<your project>\
- |--scripts\             # User scripts for automating
- |--src\                 # Source folder
-     |--configs\         # Application configs
-     |--controllers\     # Route controllers
-     |--decorators\      # Custom decorators
-     |--entities\        # Database models/entities (represents table)
-     |--middlewares\     # Custom middlewares
-     |--routes\          # Server routes, provides automatic routing
-     |--typings\         # Custom types/interface for type assertion
-     |--utils\           # Utility classes and functions
-         |--api.util.ts  # Server response utility
-     |--validations\     # Schemas for validating JSON
-     |--app.ts           # Express app and it's configuration
-     |--ormconfig.ts     # TypeORM config
-     |--server.ts        # Program entry point (db connection is also here)
- |--.eslintrc.json       # ESLint config
- |--tsconfig.json        # TypeScript compiler config
- |--...
 ```
