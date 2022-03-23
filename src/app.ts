@@ -1,6 +1,11 @@
-import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import express from 'express';
+
+import {
+    ResponseError,
+    sendResponse, Errors
+} from './utils/api.util';
 
 const app = express();
 
@@ -13,5 +18,22 @@ app.use(cors({
     preflightContinue: true
 }));
 app.use(express.json());
+
+export function errorHandling(
+    err: Error,
+    req: express.Request, res: express.Response,
+    _: express.NextFunction) {
+
+    let error: ResponseError;
+    if (err.name === ResponseError.name) {
+        error = err as ResponseError;
+    } else {
+        error = Errors.SERVER;
+        error.stack = err.stack;
+    }
+
+    return sendResponse(res, ResponseError.toResponseBody(error));
+}
+
 
 export default app;
