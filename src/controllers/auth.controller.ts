@@ -6,7 +6,7 @@ import authenticate from '../middlewares/authenticate.middleware';
 import { Request, Response } from 'express';
 import { Controller, Route } from '../decorators/express.decorator';
 import { User } from '../entities/user.entity';
-import { ApiResponseParams, Errors, sendResponse } from '../utils/api.util';
+import { sendResponse, ResponseError } from '../utils/api.util';
 import { StatusCodes } from 'http-status-codes';
 import {
     generateToken,
@@ -25,41 +25,33 @@ export class Auth {
     async login(req: Request, res: Response) {
         const body = req.body as LoginType;
 
-        const invalidError: ApiResponseParams<unknown> = {
-            success: false,
-            statusCode: StatusCodes.BAD_REQUEST,
-            message: 'Incorrect email or password'
-        };
+        const foundUser = await User.findOne({
+            where: { email: body.email }
+        });
 
-        try {
-            const foundUser = await User.findOne({
-                where: {
-                    email: body.email
-                }
-            });
-
-            if (!foundUser) {
-                return sendResponse(res, invalidError);
-            }
-
-            const isPasswordValid = await bcrypt.compare(
-                body.password,
-                foundUser.password);
-
-            if (!isPasswordValid) {
-                return sendResponse(res, invalidError);
-            }
-
-            return sendResponse(res, {
-                message: 'Successfully logged in as a user',
-                data: {
-                    accessToken: generateToken(foundUser, 'ACCESS'),
-                    refreshToken: generateToken(foundUser, 'REFRESH')
-                }
-            });
-        } catch (err) {
-            return sendResponse(res, Errors.SERVER_ERROR);
+        if (!foundUser) {
+            throw new ResponseError(
+                'Account is not registered!',
+                StatusCodes.BAD_REQUEST);
         }
+
+        const isPasswordValid = await bcrypt.compare(
+            body.password,
+            foundUser.password);
+
+        if (!isPasswordValid) {
+            throw new ResponseError(
+                'Incorrect email or password',
+                StatusCodes.BAD_REQUEST);
+        }
+
+        return sendResponse(res, {
+            message: 'Successfully logged in as a user',
+            data: {
+                accessToken: generateToken(foundUser, 'ACCESS'),
+                refreshToken: generateToken(foundUser, 'REFRESH')
+            }
+        });
     }
 
     @Controller('POST', '/register', validate(registerSchema))
@@ -67,34 +59,27 @@ export class Auth {
         const body = req.body as RegisterType;
         const user = User.create({ ...body });
 
-        try {
-            const foundUser = await User.findOne({
-                select: ['email'],
-                where: { email: user.email }
-            });
+        const foundUser = await User.findOne({
+            where: { email: user.email }
+        });
 
-            if (foundUser) {
-                return sendResponse(res, {
-                    statusCode: StatusCodes.BAD_REQUEST,
-                    success: false,
-                    message: 'This email is already registered'
-                });
-            }
-
-            const hashedPwd = await bcrypt.hash(
-                user.password,
-                config.hashRounds);
-
-            user.password = hashedPwd;
-            await User.save(user);
-
-            return sendResponse(res, {
-                statusCode: StatusCodes.CREATED,
-                message: 'Successfully registered new user'
-            });
-        } catch (err) {
-            return sendResponse(res, Errors.SERVER_ERROR);
+        if (foundUser) {
+            throw new ResponseError(
+                'This email is already registered',
+                StatusCodes.BAD_REQUEST);
         }
+
+        const hashedPassword = await bcrypt.hash(
+            user.password,
+            config.hashRounds);
+
+        user.password = hashedPassword;
+        await User.save(user);
+
+        return sendResponse(res, {
+            statusCode: StatusCodes.CREATED,
+            message: 'Successfully registered new user'
+        });
     }
 
     @Controller('POST', '/refresh', authenticate('REFRESH'))
