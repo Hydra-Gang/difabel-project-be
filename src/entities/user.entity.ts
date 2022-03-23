@@ -78,4 +78,16 @@ export class User extends BaseEntity {
         return false;
     }
 
+    /**
+     * Gets the filtered version of the object
+     *
+     * NOTE: The object will lose it's reference.
+     */
+    filter() {
+        const cloned = { ...this } as Record<string, unknown>;
+        delete cloned.password;
+
+        return cloned;
+    }
+
 }
