@@ -7,9 +7,10 @@
  ***                                                                     ***
  ***************************************************************************/
 
-import { Router } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import { routerMap } from '../decorators/express.decorator';
 import {
+    AsyncHandlerWrapper,
     ControllerDataType,
     HandlerFunction,
     RouteDataType,
@@ -24,6 +25,21 @@ const ANSI = {
     RESET: '\x1b[0m'
 };
 
+/**
+ * Wraps the {@link HandlerFunction} inside a {@link Promise}.
+ *
+ * The error handler in js doesn't support asynchronous flow.
+ * So, to somehow make the error handling work, wrapping it with {@link Promise}
+ * might make up for it.
+ *
+ * Why? Because it has {@link Promise.catch} which obviously means
+ * we can use it to "catch" the error then pass it to `next`.
+ */
+function handlerWrapAsync(handler: HandlerFunction): AsyncHandlerWrapper {
+    return (req: Request, res: Response, next: NextFunction) =>
+        Promise.resolve(handler(req, res, next)).catch((err) => next(err));
+}
+
 function registerController(
     router: RouterHandlerType,
     routerData: RouteDataType,
@@ -37,10 +53,12 @@ function registerController(
         return;
     }
 
-    const handler = routerData.targetObj[handlerName] as HandlerFunction;
+    const mainHandler = routerData.targetObj[handlerName] as HandlerFunction;
+    const handlerList = [...middlewares, mainHandler]
+        .map((handler) => handlerWrapAsync(handler));
 
     const methodName = method.toLowerCase();
-    router[methodName](path, ...middlewares, handler);
+    router[methodName](path, ...handlerList);
 
     const msg = `{color}${method} \t${routerData.path}${path}{reset}`
         .replace('{color}', ANSI.GREEN)
@@ -85,7 +103,7 @@ function registerRouters(globalRouter: Router) {
  * Imports all routes from `controllers/` directory.
  *
  * In TS, it's a bit tricky to import dynamically,
- * therefore It's an async function.
+ * therefore it's an async function.
  */
 async function importRoutes(path: string) {
     const isDir = fs.lstatSync(path).isDirectory();

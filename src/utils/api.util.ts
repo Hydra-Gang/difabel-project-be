@@ -1,19 +1,12 @@
 import { Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
+import { inspect } from 'util';
 
-export type ApiResponseParams<T> = {
-    statusCode?: number,
+export type APIResponse<T = unknown> = {
+    statusCode?: StatusCodes,
     success?: boolean,
     message: string,
     data?: T
-}
-
-export type ErrorResponseList = {
-    [key: string]: ApiResponseParams<unknown>
-}
-
-export function asErrors<T extends ErrorResponseList>(obj: T) {
-    return obj;
 }
 
 /**
@@ -22,7 +15,7 @@ export function asErrors<T extends ErrorResponseList>(obj: T) {
  * The usual way doesn't have any template to sending responses,
  * therefore you don't get help from the autocomplete.
  */
-export function sendResponse<T>(res: Response, params: ApiResponseParams<T>) {
+export function sendResponse<T>(res: Response, params: APIResponse<T>) {
     const { statusCode, success, ...newParams } = params;
 
     const isSuccess = (success ?? true);
@@ -36,20 +29,58 @@ export function sendResponse<T>(res: Response, params: ApiResponseParams<T>) {
     return res.status(code).json(response);
 }
 
-export const Errors = asErrors({
-    SERVER_ERROR: {
-        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-        success: false,
-        message: 'Unexpected server error'
-    },
-    NO_SESSION_ERROR: {
-        success: false,
-        statusCode: StatusCodes.UNAUTHORIZED,
-        message: "You don't have an account session"
-    },
-    NO_PERMISSION_ERROR: {
-        success: false,
-        statusCode: StatusCodes.FORBIDDEN,
-        message: "You don't have the permission to access this content"
+/**
+ * User-defined error for API responses
+ *
+ * Instead of using `try-catch` and call {@link sendResponse} on every error,
+ * we could just make a error handler (for express.js) and use this class
+ * to create the same effect.
+ */
+export class ResponseError extends Error {
+
+    statusCode: StatusCodes;
+
+    constructor(message: string, statusCode?: StatusCodes) {
+        super(message);
+
+        // Apparently using `instanceof` syntax doesn't work
+        // when it comes to the `Error` class.
+        //
+        // So, to make it up for that, as an identifier we just do this.
+        this.name = ResponseError.name;
+        this.statusCode = statusCode ?? StatusCodes.INTERNAL_SERVER_ERROR;
     }
-});
+
+    static toResponseBody(error: ResponseError): APIResponse {
+        return {
+            statusCode: error.statusCode,
+            success: false,
+            message: error.message
+        };
+    }
+
+}
+
+/**
+ * Common API errors
+ */
+export const Errors = {
+    /**
+     * Internal server error / Unexpected error
+     */
+    SERVER: new ResponseError('Unexpected server error'),
+
+    /**
+     * User doesn't have JWT or authentication token
+     */
+    NO_SESSION: new ResponseError(
+        "You don't have an account session",
+        StatusCodes.UNAUTHORIZED),
+
+    /**
+     * User doesn't have the permission
+     */
+    NO_PERMISSION: new ResponseError(
+        "You don't have the permission to access this content",
+        StatusCodes.FORBIDDEN)
+};

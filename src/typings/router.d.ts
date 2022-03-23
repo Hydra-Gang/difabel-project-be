@@ -17,11 +17,16 @@ declare type HandlerFunction =
         => unknown | Promise<unknown>;
 
 /**
+ * @see {@link import('../routes').handlerWrapAsync}
+ */
+declare type AsyncHandlerWrapper =
+    (req: Request, res: Response, next: NextFunction) => Promise<unknown>;
+
+/**
  * @see {@link HandlerFunction}
  */
 declare type RouterFunction =
-    (path: string, ...handlers: HandlerFunction[])
-        => unknown | Promise<unknown>;
+    (path: string, ...handlers: AsyncHandlerWrapper[]) => void;
 
 // ---------------------------------------------------- //
 
