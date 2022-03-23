@@ -41,7 +41,7 @@ export class Auth {
 
         if (!isPasswordValid) {
             throw new ResponseError(
-                'Incorrect email or password',
+                'Incorrect password',
                 StatusCodes.BAD_REQUEST);
         }
 
