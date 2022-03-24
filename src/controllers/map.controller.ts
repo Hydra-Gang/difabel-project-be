@@ -1,11 +1,14 @@
 import { Location } from '../entities/location.entity';
 import { Request, Response } from 'express';
 import { Controller, Route } from '../decorators/express.decorator';
+import { newMapSchema, NewMapType } from '../validations/map.validation';
+import { sendResponse } from '../utils/api.util';
+import { StatusCodes } from 'http-status-codes';
 
 @Route({ path: 'map' })
 export class MapRoute {
 
-    @Controller('POST', '/add')
+    @Controller('POST', '/add', validate(newMapSchema))
     async register(req: Request, res: Response) {
         const body = req.body as NewMapType;
 

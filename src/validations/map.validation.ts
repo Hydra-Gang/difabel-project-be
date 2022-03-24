@@ -8,3 +8,16 @@ export type NewMapType = {
     longitude: number
 }
 
+export const newMapSchema = joi.object({
+    name: joi.string()
+        .max(100)
+        .required(),
+
+    type: joi.string()
+        .max(30)
+        .required(),
+
+    address: joi.string()
+        .max(300)
+        .required()
+});
