@@ -19,5 +19,11 @@ export const newMapSchema = joi.object({
 
     address: joi.string()
         .max(300)
+        .required(),
+
+    latitude: joi.number()
+        .required(),
+
+    longitude: joi.number()
         .required()
 });

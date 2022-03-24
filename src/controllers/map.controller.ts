@@ -4,12 +4,13 @@ import { Controller, Route } from '../decorators/express.decorator';
 import { newMapSchema, NewMapType } from '../validations/map.validation';
 import { sendResponse } from '../utils/api.util';
 import { StatusCodes } from 'http-status-codes';
+import validate from '../middlewares/validate.middleware';
 
 @Route({ path: 'map' })
 export class MapRoute {
 
     @Controller('POST', '/add', validate(newMapSchema))
-    async register(req: Request, res: Response) {
+    async addLocation(req: Request, res: Response) {
         const body = req.body as NewMapType;
 
         const newLocation = Location.create({
@@ -25,7 +26,16 @@ export class MapRoute {
             statusCode: StatusCodes.CREATED,
             message: 'Successfully added report'
         });
+    }
 
+    @Controller('GET', '/')
+    async getLocations(req: Request, res: Response) {
+        const locations = await Location.find();
+
+        return sendResponse(res, {
+            message: 'Found location(s)',
+            data: { locations }
+        });
     }
 
 }
