@@ -19,10 +19,10 @@ export class Location extends BaseEntity {
     @Column({ length: 300 })
     address!: string;
 
-    @Column({ type: 'double' })
+    @Column({ type: 'decimal' })
     latitude!: number;
 
-    @Column({ type: 'double' })
+    @Column({ type: 'decimal' })
     longitude!: number;
 
     @Column({ name: 'created_at', type: 'date', default: new Date() })
