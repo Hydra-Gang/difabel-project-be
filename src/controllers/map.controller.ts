@@ -7,31 +7,22 @@ export class MapRoute {
 
     @Controller('POST', '/add')
     async register(req: Request, res: Response) {
-        console.log(req.body.name);
-        // const body = req.body as RegisterType;
-        // const user = User.create({ ...body });
+        const body = req.body as NewMapType;
 
-        // const foundUser = await User.findOne({
-        //     where: { email: user.email }
-        // });
+        const newLocation = Location.create({
+            name: body.name,
+            type: body.type,
+            address: body.address,
+            latitude: body.latitude,
+            longitude: body.longitude
+        });
 
-        // if (foundUser) {
-        //     throw new ResponseError(
-        //         'This email is already registered',
-        //         StatusCodes.BAD_REQUEST);
-        // }
+        await Location.save(newLocation);
+        return sendResponse(res, {
+            statusCode: StatusCodes.CREATED,
+            message: 'Successfully added report'
+        });
 
-        // const hashedPassword = await bcrypt.hash(
-        //     user.password,
-        //     config.hashRounds);
-
-        // user.password = hashedPassword;
-        // await User.save(user);
-
-        // return sendResponse(res, {
-        //     statusCode: StatusCodes.CREATED,
-        //     message: 'Successfully registered new user'
-        // });
     }
 
 }
