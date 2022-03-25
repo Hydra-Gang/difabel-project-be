@@ -13,13 +13,7 @@ export class MapRoute {
     async addLocation(req: Request, res: Response) {
         const body = req.body as NewMapType;
 
-        const newLocation = Location.create({
-            name: body.name,
-            type: body.type,
-            address: body.address,
-            latitude: body.latitude,
-            longitude: body.longitude
-        });
+        const newLocation = Location.create({ ...body });
 
         await Location.save(newLocation);
         return sendResponse(res, {
