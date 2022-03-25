@@ -136,4 +136,37 @@ export class ArticleRoute {
         });
     }
 
+    @Controller('GET', '/pending', authenticate())
+    async getPendingArticles(req: Request, res: Response) {
+        const payload = extractFromHeader(req);
+        let user: User | undefined;
+
+        if (payload) {
+            user = await User.findOne({ where: { id: payload.id } });
+        }
+
+        if (!user) {
+            throw Errors.NO_SESSION;
+        }
+
+        if (!user?.hasAnyAccess('EDITOR')) {
+            throw Errors.NO_PERMISSION;
+        }
+
+        const filterOption: FindManyOptions<Article> = {
+            where: {
+                isApproved: false,
+                isDeleted: false
+            }
+        };
+
+        const articles = await Article.find(filterOption);
+        const output = articles.map((article) => article.filter());
+
+        return sendResponse(res, {
+            message: 'Found pending article(s)',
+            data: { articles: output }
+        });
+    }
+
 }
