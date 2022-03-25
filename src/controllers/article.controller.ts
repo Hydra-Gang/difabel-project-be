@@ -5,7 +5,7 @@ import { Request, Response, urlencoded } from 'express';
 import { Route, Controller } from '../decorators/express.decorator';
 import { extractFromHeader } from '../utils/auth.util';
 import { User } from '../entities/user.entity';
-import { Article } from '../entities/article.entity';
+import { Article, ArticleStatus } from '../entities/article.entity';
 import { StatusCodes } from 'http-status-codes';
 import { Errors, ResponseError, sendResponse } from '../utils/api.util';
 import { FindManyOptions } from 'typeorm';
@@ -74,10 +74,10 @@ export class ArticleRoute {
         return sendResponse(res, { message: 'Successfully deleted article' });
     }
 
-    @Controller('GET', '/', urlencoded({ extended: true }))
+    @Controller('GET', '/', authenticate(), urlencoded({ extended: true }))
     async getArticlesByStatus(req: Request, res: Response) {
         const payload = extractFromHeader(req);
-        const status = parseInt(req.query.status as string);
+        const status = req.query.status as string;
         let user: User | undefined;
 
         if (payload) {
@@ -94,7 +94,7 @@ export class ArticleRoute {
 
         const filterOption: FindManyOptions<Article> = {
             where: {
-                status: status
+                status: parseInt(status)
             }
         };
 
@@ -127,7 +127,8 @@ export class ArticleRoute {
         }
 
         const isPermissible = !!user && user.hasAnyAccess('EDITOR', 'ADMIN');
-        if (!isPermissible && (!article.isApproved || article.isDeleted)) {
+        if (!isPermissible &&
+            (article.status === ArticleStatus.PENDING || article.isDeleted)) {
             throw ARTICLE_NOT_FOUND;
         }
 
@@ -154,8 +155,7 @@ export class ArticleRoute {
         } else {
             const filterOption: FindManyOptions<Article> = {
                 where: {
-                    isApproved: true,
-                    isDeleted: false
+                    status: ArticleStatus.APPROVED
                 }
             };
 

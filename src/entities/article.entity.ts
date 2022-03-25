@@ -7,8 +7,7 @@ import {
 
 export enum ArticleStatus {
     PENDING,
-    APPROVED,
-    DELETED
+    APPROVED
 }
 
 @Entity('articles')
@@ -34,9 +33,6 @@ export class Article extends BaseEntity {
 
     @Column({ name: 'is_deleted', default: false })
     isDeleted!: boolean;
-
-    @Column({ name: 'is_approved', default: false })
-    isApproved!: boolean;
 
     @ManyToOne(() => User, (user) => user.articles)
     @JoinColumn({ name: 'author_id' })
