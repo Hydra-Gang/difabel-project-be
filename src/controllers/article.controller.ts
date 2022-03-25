@@ -136,10 +136,11 @@ export class ArticleRoute {
         });
     }
 
-    @Controller('GET', '/', authenticate(), urlencoded({ extended: true }))
+    @Controller('GET', '/status', urlencoded({ extended: true }))
     async getArticlesByStatus(req: Request, res: Response) {
         const payload = extractFromHeader(req);
-        const status = Boolean(req.query.status);
+        console.log(req.query);
+        const status = req.query.status;
         let user: User | undefined;
 
         if (payload) {
