@@ -92,18 +92,15 @@ export class ArticleRoute {
             throw Errors.NO_PERMISSION;
         }
 
-        const filterOption: FindManyOptions<Article> = {
+        const articles = await Article.find({
             where: {
                 status: parseInt(status)
             }
-        };
-
-        const articles = await Article.find(filterOption);
-        const output = articles.map((article) => article.filter());
+        });
 
         return sendResponse(res, {
             message: 'Found article(s)',
-            data: { articles: output }
+            data: { articles }
         });
     }
 
