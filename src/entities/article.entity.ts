@@ -50,8 +50,8 @@ export class Article extends BaseEntity {
     filter() {
         const cloned = { ...this } as Record<string, unknown>;
 
+        delete cloned.status;
         delete cloned.isDeleted;
-        delete cloned.isApproved;
 
         return cloned;
     }
