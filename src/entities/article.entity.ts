@@ -6,8 +6,8 @@ import {
 } from 'typeorm';
 
 export enum ArticleStatus {
-    APPROVED,
     PENDING,
+    APPROVED,
     DELETED
 }
 
@@ -28,6 +28,9 @@ export class Article extends BaseEntity {
 
     @Column({ name: 'updated_at', type: 'date', default: new Date() })
     updatedAt!: Date;
+
+    @Column({ default: ArticleStatus.PENDING })
+    status!: ArticleStatus;
 
     @Column({ name: 'is_deleted', default: false })
     isDeleted!: boolean;
