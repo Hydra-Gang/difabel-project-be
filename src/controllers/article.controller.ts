@@ -74,6 +74,39 @@ export class ArticleRoute {
         return sendResponse(res, { message: 'Successfully deleted article' });
     }
 
+    @Controller('GET', '/', urlencoded({ extended: true }))
+    async getArticlesByStatus(req: Request, res: Response) {
+        const payload = extractFromHeader(req);
+        const status = parseInt(req.query.status as string);
+        let user: User | undefined;
+
+        if (payload) {
+            user = await User.findOne({ where: { id: payload.id } });
+        }
+
+        if (!user) {
+            throw Errors.NO_SESSION;
+        }
+
+        if (!user?.hasAnyAccess('EDITOR')) {
+            throw Errors.NO_PERMISSION;
+        }
+
+        const filterOption: FindManyOptions<Article> = {
+            where: {
+                status: status
+            }
+        };
+
+        const articles = await Article.find(filterOption);
+        const output = articles.map((article) => article.filter());
+
+        return sendResponse(res, {
+            message: 'Found article(s)',
+            data: { articles: output }
+        });
+    }
+
     @Controller('GET', '/:articleId', validate(articleIdSchema, true))
     async getArticle(req: Request, res: Response) {
         const { articleId } = req.params;
@@ -129,41 +162,6 @@ export class ArticleRoute {
             const articles = await Article.find(filterOption);
             output = articles.map((article) => article.filter());
         }
-
-        return sendResponse(res, {
-            message: 'Found article(s)',
-            data: { articles: output }
-        });
-    }
-
-    @Controller('GET', '/status', urlencoded({ extended: true }))
-    async getArticlesByStatus(req: Request, res: Response) {
-        const payload = extractFromHeader(req);
-        console.log(req.query);
-        const status = req.query.status;
-        let user: User | undefined;
-
-        if (payload) {
-            user = await User.findOne({ where: { id: payload.id } });
-        }
-
-        if (!user) {
-            throw Errors.NO_SESSION;
-        }
-
-        if (!user?.hasAnyAccess('EDITOR')) {
-            throw Errors.NO_PERMISSION;
-        }
-
-        const filterOption: FindManyOptions<Article> = {
-            where: {
-                isApproved: status,
-                isDeleted: false
-            }
-        };
-
-        const articles = await Article.find(filterOption);
-        const output = articles.map((article) => article.filter());
 
         return sendResponse(res, {
             message: 'Found article(s)',
