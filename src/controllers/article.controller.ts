@@ -167,4 +167,40 @@ export class ArticleRoute {
         });
     }
 
+    @Controller('PUT', '/:articleId')
+    async changeArticleStatus(req: Request, res: Response) {
+        const payload = extractFromHeader(req)!;
+        const { articleId } = req.params;
+
+        const user = await User.findOne({ where: { id: payload.id } });
+        if (!user) {
+            throw Errors.NO_SESSION;
+        }
+
+        if (!user.hasAnyAccess('EDITOR')) {
+            throw Errors.NO_PERMISSION;
+        }
+
+        const article = await Article.findOne({
+            where: { id: parseInt(articleId) }
+        });
+
+        if (!article) {
+            throw ARTICLE_NOT_FOUND;
+        }
+
+
+        if (article.status === ArticleStatus.PENDING) {
+            article.status = ArticleStatus.APPROVED;
+        } else {
+            article.status = ArticleStatus.PENDING;
+        }
+
+        await Article.save(article);
+
+        return sendResponse(res, {
+            message: 'Succesfully change article status'
+        });
+    }
+
 }
