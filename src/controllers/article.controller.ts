@@ -1,7 +1,7 @@
 import validate from '../middlewares/validate.middleware';
 import authenticate from '../middlewares/authenticate.middleware';
 
-import { Request, Response } from 'express';
+import { Request, Response, urlencoded } from 'express';
 import { Route, Controller } from '../decorators/express.decorator';
 import { extractFromHeader } from '../utils/auth.util';
 import { User } from '../entities/user.entity';
@@ -136,9 +136,10 @@ export class ArticleRoute {
         });
     }
 
-    @Controller('GET', '/pending', authenticate())
-    async getPendingArticles(req: Request, res: Response) {
+    @Controller('GET', '/', authenticate(), urlencoded({ extended: true }))
+    async getArticlesByStatus(req: Request, res: Response) {
         const payload = extractFromHeader(req);
+        const status = Boolean(req.query.status);
         let user: User | undefined;
 
         if (payload) {
@@ -155,7 +156,7 @@ export class ArticleRoute {
 
         const filterOption: FindManyOptions<Article> = {
             where: {
-                isApproved: false,
+                isApproved: status,
                 isDeleted: false
             }
         };
@@ -164,7 +165,7 @@ export class ArticleRoute {
         const output = articles.map((article) => article.filter());
 
         return sendResponse(res, {
-            message: 'Found pending article(s)',
+            message: 'Found article(s)',
             data: { articles: output }
         });
     }
