@@ -5,6 +5,12 @@ import {
     ManyToOne
 } from 'typeorm';
 
+export enum ArticleStatus {
+    APPROVED,
+    PENDING,
+    DELETED
+}
+
 @Entity('articles')
 export class Article extends BaseEntity {
 
