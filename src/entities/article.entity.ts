@@ -5,6 +5,11 @@ import {
     ManyToOne
 } from 'typeorm';
 
+export enum ArticleStatus {
+    PENDING,
+    APPROVED
+}
+
 @Entity('articles')
 export class Article extends BaseEntity {
 
@@ -23,11 +28,11 @@ export class Article extends BaseEntity {
     @Column({ name: 'updated_at', type: 'date', default: new Date() })
     updatedAt!: Date;
 
+    @Column({ default: ArticleStatus.PENDING })
+    status!: ArticleStatus;
+
     @Column({ name: 'is_deleted', default: false })
     isDeleted!: boolean;
-
-    @Column({ name: 'is_approved', default: false })
-    isApproved!: boolean;
 
     @ManyToOne(() => User, (user) => user.articles)
     @JoinColumn({ name: 'author_id' })
@@ -45,8 +50,8 @@ export class Article extends BaseEntity {
     filter() {
         const cloned = { ...this } as Record<string, unknown>;
 
+        delete cloned.status;
         delete cloned.isDeleted;
-        delete cloned.isApproved;
 
         return cloned;
     }

@@ -1,11 +1,11 @@
 import validate from '../middlewares/validate.middleware';
 import authenticate from '../middlewares/authenticate.middleware';
 
-import { Request, Response } from 'express';
+import { Request, Response, urlencoded } from 'express';
 import { Route, Controller } from '../decorators/express.decorator';
 import { extractFromHeader } from '../utils/auth.util';
 import { User } from '../entities/user.entity';
-import { Article } from '../entities/article.entity';
+import { Article, ArticleStatus } from '../entities/article.entity';
 import { StatusCodes } from 'http-status-codes';
 import { Errors, ResponseError, sendResponse } from '../utils/api.util';
 import { FindManyOptions } from 'typeorm';
@@ -74,6 +74,36 @@ export class ArticleRoute {
         return sendResponse(res, { message: 'Successfully deleted article' });
     }
 
+    @Controller('GET', '/', authenticate(), urlencoded({ extended: true }))
+    async getArticlesByStatus(req: Request, res: Response) {
+        const payload = extractFromHeader(req);
+        const status = req.query.status as string;
+        let user: User | undefined;
+
+        if (payload) {
+            user = await User.findOne({ where: { id: payload.id } });
+        }
+
+        if (!user) {
+            throw Errors.NO_SESSION;
+        }
+
+        if (!user?.hasAnyAccess('EDITOR')) {
+            throw Errors.NO_PERMISSION;
+        }
+
+        const articles = await Article.find({
+            where: {
+                status: parseInt(status)
+            }
+        });
+
+        return sendResponse(res, {
+            message: 'Found article(s)',
+            data: { articles }
+        });
+    }
+
     @Controller('GET', '/:articleId', validate(articleIdSchema, true))
     async getArticle(req: Request, res: Response) {
         const { articleId } = req.params;
@@ -94,7 +124,8 @@ export class ArticleRoute {
         }
 
         const isPermissible = !!user && user.hasAnyAccess('EDITOR', 'ADMIN');
-        if (!isPermissible && (!article.isApproved || article.isDeleted)) {
+        if (!isPermissible &&
+            (article.status === ArticleStatus.PENDING || article.isDeleted)) {
             throw ARTICLE_NOT_FOUND;
         }
 
@@ -121,7 +152,7 @@ export class ArticleRoute {
         } else {
             const filterOption: FindManyOptions<Article> = {
                 where: {
-                    isApproved: true,
+                    status: ArticleStatus.APPROVED,
                     isDeleted: false
                 }
             };
