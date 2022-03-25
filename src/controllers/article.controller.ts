@@ -152,7 +152,8 @@ export class ArticleRoute {
         } else {
             const filterOption: FindManyOptions<Article> = {
                 where: {
-                    status: ArticleStatus.APPROVED
+                    status: ArticleStatus.APPROVED,
+                    isDeleted: false
                 }
             };
 
