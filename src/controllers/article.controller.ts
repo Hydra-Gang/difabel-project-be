@@ -167,7 +167,7 @@ export class ArticleRoute {
         });
     }
 
-    @Controller('PUT', '/:articleId')
+    @Controller('PUT', '/:articleId', authenticate())
     async changeArticleStatus(req: Request, res: Response) {
         const payload = extractFromHeader(req)!;
         const { articleId } = req.params;
