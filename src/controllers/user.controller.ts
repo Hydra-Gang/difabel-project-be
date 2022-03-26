@@ -3,8 +3,13 @@ import authenticate from '../middlewares/authenticate.middleware';
 import { Request, Response } from 'express';
 import { Controller, Route } from '../decorators/express.decorator';
 import { AccessLevels, User } from '../entities/user.entity';
-import { sendResponse, Errors } from '../utils/api.util';
+import { sendResponse, Errors, ResponseError } from '../utils/api.util';
 import { extractFromHeader } from '../utils/auth.util';
+import { StatusCodes } from 'http-status-codes';
+
+const USER_NOT_FOUND = new ResponseError(
+    'Cannot find user',
+    StatusCodes.NOT_FOUND);
 
 @Route({ path: 'users' })
 export class UserRoute {
