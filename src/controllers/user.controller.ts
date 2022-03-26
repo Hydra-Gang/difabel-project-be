@@ -52,4 +52,38 @@ export class UserRoute {
         });
     }
 
+    @Controller('PUT', '/:userId', authenticate())
+    async changeAccessLevel(req: Request, res: Response) {
+        const payload = extractFromHeader(req)!;
+        const { userId } = req.params;
+
+        const user = await User.findOne({ where: { id: payload.id } });
+        if (!user) {
+            throw Errors.NO_SESSION;
+        }
+
+        if (!user.hasAnyAccess('ADMIN')) {
+            throw Errors.NO_PERMISSION;
+        }
+
+        const updatedUser = await User.findOne({
+            where: { id: parseInt(userId) }
+        });
+        if (!updatedUser) {
+            // throws error
+        }
+
+        if (updatedUser?.accessLevel === AccessLevels.CONTRIBUTOR) {
+            updatedUser.accessLevel = AccessLevels.EDITOR;
+        } else {
+            updatedUser!.accessLevel = AccessLevels.CONTRIBUTOR;
+        }
+
+        await User.save(updatedUser!);
+
+        sendResponse(res, {
+            message: 'Successfully change user access level'
+        });
+    }
+
 }
