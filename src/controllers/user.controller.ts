@@ -84,7 +84,7 @@ export class UserRoute {
             updatedUser.accessLevel = AccessLevels.CONTRIBUTOR;
         }
 
-        await User.save(updatedUser!);
+        await User.save(updatedUser);
 
         sendResponse(res, {
             message: 'Successfully change user access level'
