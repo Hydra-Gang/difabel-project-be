@@ -75,13 +75,13 @@ export class UserRoute {
             where: { id: parseInt(userId) }
         });
         if (!updatedUser) {
-            // throws error
+            throw USER_NOT_FOUND;
         }
 
-        if (updatedUser?.accessLevel === AccessLevels.CONTRIBUTOR) {
+        if (updatedUser.accessLevel === AccessLevels.CONTRIBUTOR) {
             updatedUser.accessLevel = AccessLevels.EDITOR;
         } else {
-            updatedUser!.accessLevel = AccessLevels.CONTRIBUTOR;
+            updatedUser.accessLevel = AccessLevels.CONTRIBUTOR;
         }
 
         await User.save(updatedUser!);
