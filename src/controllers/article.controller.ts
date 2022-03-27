@@ -5,7 +5,7 @@ import { Request, Response, urlencoded } from 'express';
 import { Route, Controller } from '../decorators/express.decorator';
 import { extractFromHeader } from '../utils/auth.util';
 import { User } from '../entities/user.entity';
-import { Article, ArticleStatus } from '../entities/article.entity';
+import { Article, ArticleStatuses } from '../entities/article.entity';
 import { StatusCodes } from 'http-status-codes';
 import { Errors, ResponseError, sendResponse } from '../utils/api.util';
 import { FindManyOptions } from 'typeorm';
@@ -125,7 +125,7 @@ export class ArticleRoute {
 
         const isPermissible = !!user && user.hasAnyAccess('EDITOR', 'ADMIN');
         if (!isPermissible &&
-            (article.status === ArticleStatus.PENDING || article.isDeleted)) {
+            (article.status === ArticleStatuses.PENDING || article.isDeleted)) {
             throw ARTICLE_NOT_FOUND;
         }
 
@@ -152,7 +152,7 @@ export class ArticleRoute {
         } else {
             const filterOption: FindManyOptions<Article> = {
                 where: {
-                    status: ArticleStatus.APPROVED,
+                    status: ArticleStatuses.APPROVED,
                     isDeleted: false
                 }
             };
@@ -190,10 +190,10 @@ export class ArticleRoute {
         }
 
 
-        if (article.status === ArticleStatus.PENDING) {
-            article.status = ArticleStatus.APPROVED;
+        if (article.status === ArticleStatuses.PENDING) {
+            article.status = ArticleStatuses.APPROVED;
         } else {
-            article.status = ArticleStatus.PENDING;
+            article.status = ArticleStatuses.PENDING;
         }
 
         await Article.save(article);

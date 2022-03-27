@@ -5,7 +5,7 @@ import {
     ManyToOne
 } from 'typeorm';
 
-export enum ArticleStatus {
+export enum ArticleStatuses {
     PENDING,
     APPROVED
 }
@@ -28,8 +28,8 @@ export class Article extends BaseEntity {
     @Column({ name: 'updated_at', type: 'date', default: new Date() })
     updatedAt!: Date;
 
-    @Column({ default: ArticleStatus.PENDING })
-    status!: ArticleStatus;
+    @Column({ default: ArticleStatuses.PENDING })
+    status!: ArticleStatuses;
 
     @Column({ name: 'is_deleted', default: false })
     isDeleted!: boolean;
