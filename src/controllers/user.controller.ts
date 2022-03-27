@@ -91,4 +91,31 @@ export class UserRoute {
         });
     }
 
+    @Controller('GET', '/:userId', authenticate())
+    async getUserById(req: Request, res: Response) {
+        const payload = extractFromHeader(req)!;
+        const { userId } = req.params;
+
+        const loggedInUser = await User.findOne({ where: { id: payload.id } });
+        if (!loggedInUser) {
+            throw Errors.NO_SESSION;
+        }
+
+        if (!loggedInUser.hasAnyAccess('ADMIN', 'EDITOR')) {
+            throw Errors.NO_PERMISSION;
+        }
+
+        const user = await User.findOne({
+            where: { id: parseInt(userId) }
+        });
+        if (!user) {
+            throw USER_NOT_FOUND;
+        }
+
+        sendResponse(res, {
+            message: 'Successfully found user',
+            data: { user: user.filter() }
+        });
+    }
+
 }
