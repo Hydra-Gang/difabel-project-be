@@ -3,7 +3,6 @@ import {
     Column, PrimaryGeneratedColumn,
 } from 'typeorm';
 
-
 @Entity('locations')
 export class Location extends BaseEntity {
 

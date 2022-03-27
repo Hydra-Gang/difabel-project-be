@@ -33,4 +33,7 @@ export class Report extends BaseEntity {
     @JoinColumn({ name: 'resolver_id' })
     user?: User;
 
+    @Column({ name: 'resolver_id' })
+    resolverId?: number;
+
 }
