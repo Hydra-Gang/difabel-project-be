@@ -38,9 +38,9 @@ export class Article extends BaseEntity {
     @JoinColumn({ name: 'author_id' })
     author!: User;
 
-    @ManyToOne(() => User)
+    @ManyToOne(() => User, { nullable: true })
     @JoinColumn({ name: 'approver_id' })
-    approver!: User;
+    approver: User | undefined;
 
     /**
      * Gets the filtered version of the object
