@@ -25,10 +25,10 @@ export class Article extends BaseEntity {
     @Column({ name: 'created_at', type: 'date', default: new Date() })
     createdAt!: Date;
 
-    @Column({ name: 'updated_at', type: 'date', default: new Date() })
-    updatedAt!: Date;
+    @Column({ name: 'updated_at', type: 'date', nullable: true })
+    updatedAt?: Date;
 
-    @Column({ default: ArticleStatuses.PENDING })
+    @Column({ type: 'smallint', default: ArticleStatuses.PENDING })
     status!: ArticleStatuses;
 
     @Column({ name: 'is_deleted', default: false })
@@ -40,7 +40,13 @@ export class Article extends BaseEntity {
 
     @ManyToOne(() => User, { nullable: true })
     @JoinColumn({ name: 'approver_id' })
-    approver: User | undefined;
+    approver?: User;
+
+    @Column({ name: 'author_id' })
+    authorId!: number;
+
+    @Column({ name: 'approver_id' })
+    approverId?: number;
 
     /**
      * Gets the filtered version of the object
