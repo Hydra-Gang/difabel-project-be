@@ -105,8 +105,11 @@ export class ArticleRoute {
         });
     }
 
-    @Controller('GET', '/', authenticate(), urlencoded({ extended: true }))
-    async getArticlesByStatus(req: Request, res: Response) {
+    @Controller(
+        'GET', '/filter',
+        authenticate(), urlencoded({ extended: true })
+    )
+    async getArticlesFiltered(req: Request, res: Response) {
         const payload = getPayloadFromHeader(req)!;
         const status = req.query.status as string;
         const user = await User.findOne({ where: { id: payload.id } });
