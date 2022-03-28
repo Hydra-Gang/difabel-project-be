@@ -3,7 +3,7 @@ import authenticate from '../middlewares/authenticate.middleware';
 
 import { Request, Response, urlencoded } from 'express';
 import { Route, Controller } from '../decorators/express.decorator';
-import { extractFromHeader } from '../utils/auth.util';
+import { getPayloadFromHeader } from '../utils/auth.util';
 import { User } from '../entities/user.entity';
 import { Article, ArticleStatuses } from '../entities/article.entity';
 import { StatusCodes } from 'http-status-codes';
@@ -25,7 +25,7 @@ export class ArticleRoute {
     @Controller('POST', '/', authenticate(), validate(newArticleSchema))
     async postArticle(req: Request, res: Response) {
         const body = req.body as NewArticleType;
-        const { id: userId } = extractFromHeader(req)!;
+        const { id: userId } = getPayloadFromHeader(req)!;
 
         const user = await User.findOne({ where: { id: userId } });
         if (!user) {
@@ -46,7 +46,7 @@ export class ArticleRoute {
         authenticate(), validate(articleIdSchema, true)
     )
     async deleteArticle(req: Request, res: Response) {
-        const payload = extractFromHeader(req)!;
+        const payload = getPayloadFromHeader(req)!;
         const { articleId } = req.params;
 
         const user = await User.findOne({ where: { id: payload.id } });
@@ -73,7 +73,7 @@ export class ArticleRoute {
 
     @Controller('GET', '/', authenticate(), urlencoded({ extended: true }))
     async getArticlesByStatus(req: Request, res: Response) {
-        const payload = extractFromHeader(req)!;
+        const payload = getPayloadFromHeader(req)!;
         const status = req.query.status as string;
 
         const user = await User.findOne({ where: { id: payload.id } });
@@ -100,7 +100,7 @@ export class ArticleRoute {
         const { articleId } = req.params;
 
         let user: User | undefined;
-        const payload = extractFromHeader(req);
+        const payload = getPayloadFromHeader(req);
 
         if (payload) {
             user = await User.findOne({ where: { id: payload.id } });
@@ -133,7 +133,7 @@ export class ArticleRoute {
 
     @Controller('GET', '/')
     async getAllArticles(req: Request, res: Response) {
-        const payload = extractFromHeader(req);
+        const payload = getPayloadFromHeader(req);
         let user: User | undefined;
         let output: unknown[];
 
@@ -163,7 +163,7 @@ export class ArticleRoute {
 
     @Controller('PUT', '/:articleId', authenticate())
     async changeArticleStatus(req: Request, res: Response) {
-        const payload = extractFromHeader(req)!;
+        const payload = getPayloadFromHeader(req)!;
         const { articleId } = req.params;
 
         const user = await User.findOne({ where: { id: payload.id } });

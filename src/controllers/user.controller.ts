@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
 import { Controller, Route } from '../decorators/express.decorator';
 import { AccessLevels, User } from '../entities/user.entity';
 import { sendResponse, Errors, ResponseError } from '../utils/api.util';
-import { extractFromHeader } from '../utils/auth.util';
+import { getPayloadFromHeader } from '../utils/auth.util';
 import { StatusCodes } from 'http-status-codes';
 
 const USER_NOT_FOUND = new ResponseError(
@@ -16,7 +16,7 @@ export class UserRoute {
 
     @Controller('GET', '/profile', authenticate())
     async getUser(req: Request, res: Response) {
-        const payload = extractFromHeader(req)!;
+        const payload = getPayloadFromHeader(req)!;
 
         const user = await User.findOne({ where: { id: payload.id } });
         if (!user) {
@@ -31,7 +31,7 @@ export class UserRoute {
 
     @Controller('GET', '/', authenticate())
     async getAllUsers(req: Request, res: Response) {
-        const payload = extractFromHeader(req)!;
+        const payload = getPayloadFromHeader(req)!;
 
         const user = await User.findOne({ where: { id: payload.id } });
         if (!user) {
@@ -59,7 +59,7 @@ export class UserRoute {
 
     @Controller('PUT', '/:userId', authenticate())
     async changeAccessLevel(req: Request, res: Response) {
-        const payload = extractFromHeader(req)!;
+        const payload = getPayloadFromHeader(req)!;
         const { userId } = req.params;
 
         const user = await User.findOne({ where: { id: payload.id } });
@@ -92,7 +92,7 @@ export class UserRoute {
 
     @Controller('GET', '/:userId', authenticate())
     async getUserById(req: Request, res: Response) {
-        const payload = extractFromHeader(req)!;
+        const payload = getPayloadFromHeader(req)!;
         const { userId } = req.params;
 
         const user = await User.findOne({ where: { id: payload.id } });
