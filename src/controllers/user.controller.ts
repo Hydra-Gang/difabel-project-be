@@ -32,12 +32,11 @@ export class UserRoute {
     @Controller('GET', '/', authenticate())
     async getAllUsers(req: Request, res: Response) {
         const payload = getPayloadFromHeader(req)!;
-
         const user = await User.findOne({ where: { id: payload.id } });
+
         if (!user) {
             throw Errors.NO_SESSION;
         }
-
         if (!user.hasAnyAccess('ADMIN')) {
             throw Errors.NO_PERMISSION;
         }
@@ -49,10 +48,10 @@ export class UserRoute {
             ]
         });
 
-        const output = users.map((usr) => usr.filter());
+        const output = users.map((u) => u.filter());
 
         return sendResponse(res, {
-            message: 'Successfully found all users',
+            message: 'Found all users',
             data: { output }
         });
     }
