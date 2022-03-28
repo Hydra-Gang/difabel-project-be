@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
 import { Controller, Route } from '../decorators/express.decorator';
 import { AccessLevels, User } from '../entities/user.entity';
 import { sendResponse, Errors, ResponseError } from '../utils/api.util';
-import { extractFromHeader } from '../utils/auth.util';
+import { getPayloadFromHeader } from '../utils/auth.util';
 import { StatusCodes } from 'http-status-codes';
 
 const USER_NOT_FOUND = new ResponseError(
@@ -16,7 +16,7 @@ export class UserRoute {
 
     @Controller('GET', '/profile', authenticate())
     async getUser(req: Request, res: Response) {
-        const payload = extractFromHeader(req)!;
+        const payload = getPayloadFromHeader(req)!;
 
         const user = await User.findOne({ where: { id: payload.id } });
         if (!user) {
@@ -31,13 +31,12 @@ export class UserRoute {
 
     @Controller('GET', '/', authenticate())
     async getAllUsers(req: Request, res: Response) {
-        const payload = extractFromHeader(req)!;
-
+        const payload = getPayloadFromHeader(req)!;
         const user = await User.findOne({ where: { id: payload.id } });
+
         if (!user) {
             throw Errors.NO_SESSION;
         }
-
         if (!user.hasAnyAccess('ADMIN')) {
             throw Errors.NO_PERMISSION;
         }
@@ -49,43 +48,42 @@ export class UserRoute {
             ]
         });
 
-        const output = users.map((usr) => usr.filter());
+        const output = users.map((u) => u.filter());
 
         return sendResponse(res, {
-            message: 'Successfully found all users',
+            message: 'Found all users',
             data: { output }
         });
     }
 
     @Controller('PUT', '/:userId', authenticate())
     async changeAccessLevel(req: Request, res: Response) {
-        const payload = extractFromHeader(req)!;
+        const payload = getPayloadFromHeader(req)!;
         const { userId } = req.params;
 
         const user = await User.findOne({ where: { id: payload.id } });
         if (!user) {
             throw Errors.NO_SESSION;
         }
-
         if (!user.hasAnyAccess('ADMIN')) {
             throw Errors.NO_PERMISSION;
         }
 
-        const updatedUser = await User.findOne({
+        const targetUser = await User.findOne({
             where: { id: parseInt(userId) }
         });
-        if (!updatedUser) {
+
+        if (!targetUser) {
             throw USER_NOT_FOUND;
         }
 
-        if (updatedUser.accessLevel === AccessLevels.CONTRIBUTOR) {
-            updatedUser.accessLevel = AccessLevels.EDITOR;
+        if (targetUser.hasAnyAccess('CONTRIBUTOR')) {
+            targetUser.accessLevel = AccessLevels.EDITOR;
         } else {
-            updatedUser.accessLevel = AccessLevels.CONTRIBUTOR;
+            targetUser.accessLevel = AccessLevels.CONTRIBUTOR;
         }
 
-        await User.save(updatedUser);
-
+        await User.save(targetUser);
         sendResponse(res, {
             message: 'Successfully change user access level'
         });
@@ -93,28 +91,27 @@ export class UserRoute {
 
     @Controller('GET', '/:userId', authenticate())
     async getUserById(req: Request, res: Response) {
-        const payload = extractFromHeader(req)!;
+        const payload = getPayloadFromHeader(req)!;
         const { userId } = req.params;
 
-        const loggedInUser = await User.findOne({ where: { id: payload.id } });
-        if (!loggedInUser) {
+        const user = await User.findOne({ where: { id: payload.id } });
+        if (!user) {
             throw Errors.NO_SESSION;
         }
-
-        if (!loggedInUser.hasAnyAccess('ADMIN', 'EDITOR')) {
+        if (!user.hasAnyAccess('ADMIN', 'EDITOR')) {
             throw Errors.NO_PERMISSION;
         }
 
-        const user = await User.findOne({
+        const targetUser = await User.findOne({
             where: { id: parseInt(userId) }
         });
-        if (!user) {
+        if (!targetUser) {
             throw USER_NOT_FOUND;
         }
 
         sendResponse(res, {
             message: 'Successfully found user',
-            data: { user: user.filter() }
+            data: { user: targetUser.filter() }
         });
     }
 

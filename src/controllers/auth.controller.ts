@@ -10,7 +10,8 @@ import { sendResponse, ResponseError } from '../utils/api.util';
 import { StatusCodes } from 'http-status-codes';
 import {
     generateToken,
-    extractFromHeader,
+    getPayloadFromHeader,
+    getTokenFromHeader,
     REFRESH_TOKEN_LIST
 } from '../utils/auth.util';
 import {
@@ -84,7 +85,7 @@ export class AuthRoute {
 
     @Controller('POST', '/refresh', authenticate('REFRESH'))
     async refreshToken(req: Request, res: Response) {
-        const userPayload = extractFromHeader(req, 'REFRESH')!;
+        const userPayload = getPayloadFromHeader(req, 'REFRESH')!;
 
         return sendResponse(res, {
             message: 'Successfully refreshed new token',
@@ -96,7 +97,7 @@ export class AuthRoute {
 
     @Controller('DELETE', '/logout', authenticate('REFRESH'))
     async logout(req: Request, res: Response) {
-        const token = req.header('authorization')!.replace('Bearer ', '');
+        const token = getTokenFromHeader(req)!;
         const idx = REFRESH_TOKEN_LIST.indexOf(token);
 
         REFRESH_TOKEN_LIST.splice(idx);

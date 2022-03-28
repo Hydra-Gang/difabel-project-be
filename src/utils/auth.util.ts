@@ -46,26 +46,45 @@ export function generateToken(user: User | UserPayload, tokenType: TokenType) {
 }
 
 /**
- * Extracts the user's payload from the JWT.
+ * Extracts the user's JWT (in the header).
+ * This is used to make the `logout` controller cleaner.
  *
- * With this, we don't need to validate the token manually
- * and instead can focus with the payload content.
- *
- * @returns An `undefined` when invalid,
- *          otherwise you'll get {@link UserPayload}
- * @throws If you input the incorrect {@link TokenType}
+ * It won't be an `undefined` if the `authenticate` middleware
+ * is already used for the controller.
  */
-export function extractFromJWT(
-    rawToken: string | undefined, tokenType: TokenType = 'ACCESS') {
-
+export function getTokenFromHeader(req: Request) {
+    const rawToken = req.header('authorization');
     const prefix = 'Bearer ';
+
     if (!rawToken || !rawToken.startsWith(prefix)) {
         return;
     }
 
     const token = rawToken.replace(prefix, '');
-    let secret: string;
+    return token;
+}
 
+/**
+ * Extracts the user's payload from the JWT (in the header).
+ *
+ * With this, we don't need to validate the token manually
+ * (even after using `authenticate` middleware) and instead can focus
+ * with the payload content.
+ *
+ * It won't be an `undefined` if the `authenticate` middleware
+ * is already used for the controller.
+ *
+ * @throws If the {@link tokenType} incorrect {@link TokenType}
+ */
+export function getPayloadFromHeader(
+    req: Request, tokenType: TokenType = 'ACCESS') {
+
+    const token = getTokenFromHeader(req);
+    if (!token) {
+        return;
+    }
+
+    let secret: string;
     switch (tokenType) {
         case 'ACCESS':
             secret = config.jwt.accessSecret;
@@ -86,15 +105,4 @@ export function extractFromJWT(
     } catch (err) {
         // do nothing to prevent error
     }
-}
-
-/**
- * Save an extra line with extracting the header from {@link Request}.
- *
- * @see {@link extractFromJWT}
- */
-export function extractFromHeader(
-    req: Request, tokenType: TokenType = 'ACCESS') {
-
-    return extractFromJWT(req.header('authorization'), tokenType);
 }

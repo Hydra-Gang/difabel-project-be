@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { Errors } from '../utils/api.util';
-import { extractFromHeader, TokenType } from '../utils/auth.util';
+import { getPayloadFromHeader, TokenType } from '../utils/auth.util';
 
 /**
  * Handles user authentication
@@ -13,7 +13,7 @@ function authenticate(
     tokenType: TokenType = 'ACCESS') {
 
     return (req: Request, res: Response, next: NextFunction) => {
-        const payload = extractFromHeader(req, tokenType);
+        const payload = getPayloadFromHeader(req, tokenType);
         if (!payload) {
             throw Errors.NO_SESSION;
         }

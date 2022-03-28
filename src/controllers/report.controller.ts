@@ -7,7 +7,7 @@ import { Controller, Route } from '../decorators/express.decorator';
 import { Report, ReportStatuses } from '../entities/report.entity';
 import { User } from '../entities/user.entity';
 import { sendResponse } from '../utils/api.util';
-import { extractFromHeader } from '../utils/auth.util';
+import { getPayloadFromHeader } from '../utils/auth.util';
 import {
     newReportSchema,
     NewReportType
@@ -22,9 +22,7 @@ export class ReportRoute {
 
         return sendResponse(res, {
             message: 'Managed to get all reports',
-            data: {
-                reports
-            }
+            data: { reports }
         });
     }
 
@@ -32,11 +30,9 @@ export class ReportRoute {
     async addReport(req: Request, res: Response) {
         const body = req.body as NewReportType;
 
-        const report = Report.create(
-            {
-                content: body.content
-            }
-        );
+        const report = Report.create({
+            content: body.content
+        });
 
         await Report.save(report);
         return sendResponse(res, {
@@ -48,7 +44,7 @@ export class ReportRoute {
     @Controller('PUT', '/status-update/:reportId', authenticate())
     async updateReportStatus(req: Request, res: Response) {
         const reportId = parseInt(req.params.reportId);
-        const payload = extractFromHeader(req)!;
+        const payload = getPayloadFromHeader(req)!;
 
         const report = await Report.findOne({
             where: {

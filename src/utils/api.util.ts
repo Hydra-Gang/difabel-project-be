@@ -1,6 +1,5 @@
 import { Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { inspect } from 'util';
 
 export type APIResponse<T = unknown> = {
     statusCode?: StatusCodes,
