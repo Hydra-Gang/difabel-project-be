@@ -69,7 +69,7 @@ export class ReportRoute {
 
         report.updatedAt = new Date();
         report.status = ReportStatuses.RESOLVED;
-        report.user = user;
+        report.resolver = user;
 
         await Report.save(report);
 

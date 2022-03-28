@@ -31,7 +31,7 @@ export class Report extends BaseEntity {
 
     @ManyToOne(() => User, { nullable: true })
     @JoinColumn({ name: 'resolver_id' })
-    user?: User;
+    resolver?: User;
 
     @Column({ name: 'resolver_id', nullable: true })
     resolverId?: number;
