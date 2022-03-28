@@ -22,9 +22,7 @@ export class ReportRoute {
 
         return sendResponse(res, {
             message: 'Managed to get all reports',
-            data: {
-                reports
-            }
+            data: { reports }
         });
     }
 
@@ -32,11 +30,9 @@ export class ReportRoute {
     async addReport(req: Request, res: Response) {
         const body = req.body as NewReportType;
 
-        const report = Report.create(
-            {
-                content: body.content
-            }
-        );
+        const report = Report.create({
+            content: body.content
+        });
 
         await Report.save(report);
         return sendResponse(res, {
