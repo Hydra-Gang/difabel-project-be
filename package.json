@@ -18,7 +18,8 @@
         "typeorm": "node ./node_modules/typeorm/cli.js",
         "lint": "eslint ./src",
         "lint:fix": "eslint ./src --fix",
-        "jwt:generate": "node ./scripts/jwt-generate.js"
+        "jwt:generate": "node ./scripts/jwt-generate.js",
+        "seed": "yarn compile && node ./dist/seeder.js"
     },
     "devDependencies": {
         "@types/bcrypt": "^5.0.0",
