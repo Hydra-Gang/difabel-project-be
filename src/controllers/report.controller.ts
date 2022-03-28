@@ -6,7 +6,7 @@ import { StatusCodes } from 'http-status-codes';
 import { Controller, Route } from '../decorators/express.decorator';
 import { Report, ReportStatuses } from '../entities/report.entity';
 import { User } from '../entities/user.entity';
-import { sendResponse } from '../utils/api.util';
+import { Errors, sendResponse } from '../utils/api.util';
 import { getPayloadFromHeader } from '../utils/auth.util';
 import {
     newReportSchema,
@@ -30,21 +30,27 @@ export class ReportRoute {
     async addReport(req: Request, res: Response) {
         const body = req.body as NewReportType;
 
-        const report = Report.create({
-            content: body.content
-        });
-
+        const report = Report.create({ content: body.content });
         await Report.save(report);
+
         return sendResponse(res, {
             statusCode: StatusCodes.CREATED,
             message: 'Successfully added report'
         });
     }
 
-    @Controller('PUT', '/status-update/:reportId', authenticate())
+    @Controller('PUT', '/update/:reportId', authenticate())
     async updateReportStatus(req: Request, res: Response) {
         const reportId = parseInt(req.params.reportId);
         const payload = getPayloadFromHeader(req)!;
+        const user = await User.findOne({ where: { id: payload.id } });
+
+        if (!user) {
+            throw Errors.NO_SESSION;
+        }
+        if (!user.hasAnyAccess('ADMIN')) {
+            throw Errors.NO_PERMISSION;
+        }
 
         const report = await Report.findOne({
             where: {
@@ -60,8 +66,6 @@ export class ReportRoute {
                 message: 'Report not found'
             });
         }
-
-        const user = await User.findOne({ where: { id: payload.id } });
 
         report.updatedAt = new Date();
         report.status = ReportStatuses.RESOLVED;

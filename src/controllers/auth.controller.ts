@@ -108,9 +108,4 @@ export class AuthRoute {
         });
     }
 
-    @Controller('GET', '/check', authenticate())
-    async checkSession(req: Request, res: Response) {
-        return sendResponse(res, { message: 'You still have a session' });
-    }
-
 }
