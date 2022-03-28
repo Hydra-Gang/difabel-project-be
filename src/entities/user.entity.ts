@@ -42,11 +42,14 @@ export class User extends BaseEntity {
     })
     accessLevel!: AccessLevels;
 
-    @OneToMany(() => Report, (report) => report.user)
-    reports!: Report[];
-
     @OneToMany(() => Article, (article) => article.author)
     articles!: Article[];
+
+    /**
+     * The reports resolved by current user
+     */
+    @OneToMany(() => Report, (report) => report.resolver)
+    resolvedReports!: Report[];
 
     /**
      * The articles approved by current user

@@ -71,7 +71,7 @@ export class ArticleRoute {
         return sendResponse(res, { message: 'Successfully deleted article' });
     }
 
-    @Controller('PUT', '/update/:articleId', authenticate())
+    @Controller('PUT', '/status/:articleId', authenticate())
     async changeArticleStatus(req: Request, res: Response) {
         const payload = getPayloadFromHeader(req)!;
         const user = await User.findOne({ where: { id: payload.id } });

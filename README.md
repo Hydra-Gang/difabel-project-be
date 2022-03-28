@@ -48,6 +48,10 @@ Backend of the difabel project. This project is using the project template from 
    ```sh
    yarn jwt:generate
    ```
+1. (_Optional_) If you want, you can seed data
+   ```sh
+   yarn seed
+   ```
 1. Run the dev server
    ```sh
    yarn auto
@@ -90,6 +94,12 @@ yarn start
 
 # automatically compiles and starts the program (not used in production)
 yarn auto
+```
+
+Data seeding:
+```sh
+# Add a bunch of prepared data in `seeder.ts` file
+yarn seed
 ```
 
 Cleans the compiled files (in `dist` directory):
