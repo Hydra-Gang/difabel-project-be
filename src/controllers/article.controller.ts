@@ -115,11 +115,11 @@ export class ArticleRoute {
         }
 
         const hasPermission = !!user && user.hasAnyAccess('EDITOR', 'ADMIN');
-        const isReadableForGuest =
+        const isNotForGuest =
             article.status === ArticleStatuses.PENDING ||
             article.isDeleted;
 
-        if (!hasPermission && isReadableForGuest) {
+        if (!hasPermission && isNotForGuest) {
             throw ARTICLE_NOT_FOUND;
         }
 
