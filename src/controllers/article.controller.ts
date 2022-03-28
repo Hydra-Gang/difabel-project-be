@@ -22,10 +22,7 @@ const ARTICLE_NOT_FOUND = new ResponseError(
 @Route({ path: 'articles' })
 export class ArticleRoute {
 
-    @Controller(
-        'POST', '/',
-        authenticate(), validate(newArticleSchema),
-    )
+    @Controller('POST', '/', authenticate(), validate(newArticleSchema))
     async postArticle(req: Request, res: Response) {
         const body = req.body as NewArticleType;
         const { id: userId } = extractFromHeader(req)!;
@@ -76,26 +73,20 @@ export class ArticleRoute {
 
     @Controller('GET', '/', authenticate(), urlencoded({ extended: true }))
     async getArticlesByStatus(req: Request, res: Response) {
-        const payload = extractFromHeader(req);
+        const payload = extractFromHeader(req)!;
         const status = req.query.status as string;
-        let user: User | undefined;
 
-        if (payload) {
-            user = await User.findOne({ where: { id: payload.id } });
-        }
+        const user = await User.findOne({ where: { id: payload.id } });
 
         if (!user) {
             throw Errors.NO_SESSION;
         }
-
-        if (!user?.hasAnyAccess('EDITOR')) {
+        if (!user.hasAnyAccess('EDITOR')) {
             throw Errors.NO_PERMISSION;
         }
 
         const articles = await Article.find({
-            where: {
-                status: parseInt(status)
-            }
+            where: { status: parseInt(status) }
         });
 
         return sendResponse(res, {
@@ -123,16 +114,19 @@ export class ArticleRoute {
             throw ARTICLE_NOT_FOUND;
         }
 
-        const isPermissible = !!user && user.hasAnyAccess('EDITOR', 'ADMIN');
-        if (!isPermissible &&
-            (article.status === ArticleStatuses.PENDING || article.isDeleted)) {
+        const hasPermission = !!user && user.hasAnyAccess('EDITOR', 'ADMIN');
+        const isReadableForGuest =
+            article.status === ArticleStatuses.PENDING ||
+            article.isDeleted;
+
+        if (!hasPermission && isReadableForGuest) {
             throw ARTICLE_NOT_FOUND;
         }
 
         return sendResponse(res, {
             message: 'Article is found',
             data: {
-                article: (isPermissible ? article : article.filter())
+                article: (hasPermission ? article : article.filter())
             }
         });
     }
@@ -173,10 +167,10 @@ export class ArticleRoute {
         const { articleId } = req.params;
 
         const user = await User.findOne({ where: { id: payload.id } });
+
         if (!user) {
             throw Errors.NO_SESSION;
         }
-
         if (!user.hasAnyAccess('EDITOR')) {
             throw Errors.NO_PERMISSION;
         }
@@ -189,15 +183,14 @@ export class ArticleRoute {
             throw ARTICLE_NOT_FOUND;
         }
 
-
-        if (article.status === ArticleStatuses.PENDING) {
+        const isPending = article.status === ArticleStatuses.PENDING;
+        if (isPending) {
             article.status = ArticleStatuses.APPROVED;
         } else {
             article.status = ArticleStatuses.PENDING;
         }
 
         await Article.save(article);
-
         return sendResponse(res, {
             message: 'Succesfully change article status'
         });
