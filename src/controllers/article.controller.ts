@@ -129,6 +129,36 @@ export class ArticleRoute {
         });
     }
 
+    @Controller('GET', '/')
+    async getAllArticles(req: Request, res: Response) {
+        const payload = getPayloadFromHeader(req);
+        let user: User | undefined;
+        let output: unknown[];
+
+        if (payload) {
+            user = await User.findOne({ where: { id: payload.id } });
+        }
+
+        if (user?.hasAnyAccess('EDITOR', 'ADMIN')) {
+            output = await Article.find();
+        } else {
+            const filterOption: FindManyOptions<Article> = {
+                where: {
+                    status: ArticleStatuses.APPROVED,
+                    isDeleted: false
+                }
+            };
+
+            const articles = await Article.find(filterOption);
+            output = articles.map((article) => article.filter());
+        }
+
+        return sendResponse(res, {
+            message: 'Found article(s)',
+            data: { articles: output }
+        });
+    }
+
     @Controller('GET', '/:articleId', validate(articleIdSchema, true))
     async getArticle(req: Request, res: Response) {
         const { articleId } = req.params;
@@ -162,36 +192,6 @@ export class ArticleRoute {
             data: {
                 article: (hasPermission ? article : article.filter())
             }
-        });
-    }
-
-    @Controller('GET', '/')
-    async getAllArticles(req: Request, res: Response) {
-        const payload = getPayloadFromHeader(req);
-        let user: User | undefined;
-        let output: unknown[];
-
-        if (payload) {
-            user = await User.findOne({ where: { id: payload.id } });
-        }
-
-        if (user?.hasAnyAccess('EDITOR', 'ADMIN')) {
-            output = await Article.find();
-        } else {
-            const filterOption: FindManyOptions<Article> = {
-                where: {
-                    status: ArticleStatuses.APPROVED,
-                    isDeleted: false
-                }
-            };
-
-            const articles = await Article.find(filterOption);
-            output = articles.map((article) => article.filter());
-        }
-
-        return sendResponse(res, {
-            message: 'Found article(s)',
-            data: { articles: output }
         });
     }
 
