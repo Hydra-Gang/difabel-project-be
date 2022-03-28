@@ -66,26 +66,25 @@ export class UserRoute {
         if (!user) {
             throw Errors.NO_SESSION;
         }
-
         if (!user.hasAnyAccess('ADMIN')) {
             throw Errors.NO_PERMISSION;
         }
 
-        const updatedUser = await User.findOne({
+        const targetUser = await User.findOne({
             where: { id: parseInt(userId) }
         });
-        if (!updatedUser) {
+
+        if (!targetUser) {
             throw USER_NOT_FOUND;
         }
 
-        if (updatedUser.accessLevel === AccessLevels.CONTRIBUTOR) {
-            updatedUser.accessLevel = AccessLevels.EDITOR;
+        if (targetUser.hasAnyAccess('CONTRIBUTOR')) {
+            targetUser.accessLevel = AccessLevels.EDITOR;
         } else {
-            updatedUser.accessLevel = AccessLevels.CONTRIBUTOR;
+            targetUser.accessLevel = AccessLevels.CONTRIBUTOR;
         }
 
-        await User.save(updatedUser);
-
+        await User.save(targetUser);
         sendResponse(res, {
             message: 'Successfully change user access level'
         });
@@ -96,25 +95,24 @@ export class UserRoute {
         const payload = extractFromHeader(req)!;
         const { userId } = req.params;
 
-        const loggedInUser = await User.findOne({ where: { id: payload.id } });
-        if (!loggedInUser) {
+        const user = await User.findOne({ where: { id: payload.id } });
+        if (!user) {
             throw Errors.NO_SESSION;
         }
-
-        if (!loggedInUser.hasAnyAccess('ADMIN', 'EDITOR')) {
+        if (!user.hasAnyAccess('ADMIN', 'EDITOR')) {
             throw Errors.NO_PERMISSION;
         }
 
-        const user = await User.findOne({
+        const targetUser = await User.findOne({
             where: { id: parseInt(userId) }
         });
-        if (!user) {
+        if (!targetUser) {
             throw USER_NOT_FOUND;
         }
 
         sendResponse(res, {
             message: 'Successfully found user',
-            data: { user: user.filter() }
+            data: { user: targetUser.filter() }
         });
     }
 
