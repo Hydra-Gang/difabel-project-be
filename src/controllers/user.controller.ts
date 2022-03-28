@@ -29,7 +29,7 @@ export class UserRoute {
         });
     }
 
-    @Controller('PUT', '/:userId', authenticate())
+    @Controller('PUT', '/update/:userId', authenticate())
     async changeAccessLevel(req: Request, res: Response) {
         const payload = getPayloadFromHeader(req)!;
         const { userId } = req.params;
