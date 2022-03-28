@@ -79,13 +79,22 @@ export class User extends BaseEntity {
     }
 
     /**
-     * Gets the filtered version of the object
+     * Gets the filtered version of the object.
      *
-     * NOTE: The object will lose it's reference.
+     * This is a must because we can't just give away all information
+     * to all users. Thus, we need a way to limit it.
+     *
+     * @param isAdmin If it's for an admin, it'll show more information
+     *                about the user, otherwise most of it will be removed.
      */
-    filter() {
+    filter(isAdmin: boolean) {
         const cloned = { ...this } as Record<string, unknown>;
+
         delete cloned.password;
+        if (!isAdmin) {
+            delete cloned.phone;
+            delete cloned.accessLevel;
+        }
 
         return cloned;
     }

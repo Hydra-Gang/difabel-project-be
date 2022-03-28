@@ -25,34 +25,7 @@ export class UserRoute {
 
         return sendResponse(res, {
             message: 'Successfully found user data',
-            data: { user: user.filter() }
-        });
-    }
-
-    @Controller('GET', '/', authenticate())
-    async getAllUsers(req: Request, res: Response) {
-        const payload = getPayloadFromHeader(req)!;
-        const user = await User.findOne({ where: { id: payload.id } });
-
-        if (!user) {
-            throw Errors.NO_SESSION;
-        }
-        if (!user.hasAnyAccess('ADMIN')) {
-            throw Errors.NO_PERMISSION;
-        }
-
-        const users = await User.find({
-            where: [
-                { accessLevel: AccessLevels.CONTRIBUTOR },
-                { accessLevel: AccessLevels.EDITOR }
-            ]
-        });
-
-        const output = users.map((u) => u.filter());
-
-        return sendResponse(res, {
-            message: 'Found all users',
-            data: { output }
+            data: { user: user.filter(false) }
         });
     }
 
@@ -84,8 +57,35 @@ export class UserRoute {
         }
 
         await User.save(targetUser);
-        sendResponse(res, {
+        return sendResponse(res, {
             message: 'Successfully change user access level'
+        });
+    }
+
+    @Controller('GET', '/', authenticate())
+    async getAllUsers(req: Request, res: Response) {
+        const payload = getPayloadFromHeader(req)!;
+        const user = await User.findOne({ where: { id: payload.id } });
+
+        if (!user) {
+            throw Errors.NO_SESSION;
+        }
+        if (!user.hasAnyAccess('ADMIN')) {
+            throw Errors.NO_PERMISSION;
+        }
+
+        const users = await User.find({
+            where: [
+                { accessLevel: AccessLevels.CONTRIBUTOR },
+                { accessLevel: AccessLevels.EDITOR }
+            ]
+        });
+
+        const output = users.map((u) => u.filter(true));
+
+        return sendResponse(res, {
+            message: 'Found all users',
+            data: { users: output }
         });
     }
 
@@ -98,9 +98,6 @@ export class UserRoute {
         if (!user) {
             throw Errors.NO_SESSION;
         }
-        if (!user.hasAnyAccess('ADMIN', 'EDITOR')) {
-            throw Errors.NO_PERMISSION;
-        }
 
         const targetUser = await User.findOne({
             where: { id: parseInt(userId) }
@@ -109,9 +106,12 @@ export class UserRoute {
             throw USER_NOT_FOUND;
         }
 
-        sendResponse(res, {
+        const isAdmin = user.hasAnyAccess('ADMIN');
+        const output = targetUser.filter(isAdmin);
+
+        return sendResponse(res, {
             message: 'Successfully found user',
-            data: { user: targetUser.filter() }
+            data: { user: output }
         });
     }
 
