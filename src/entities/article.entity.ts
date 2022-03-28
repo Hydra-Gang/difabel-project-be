@@ -45,7 +45,7 @@ export class Article extends BaseEntity {
     @Column({ name: 'author_id' })
     authorId!: number;
 
-    @Column({ name: 'approver_id' })
+    @Column({ name: 'approver_id', nullable: true })
     approverId?: number;
 
     /**
