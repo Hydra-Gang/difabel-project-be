@@ -22,12 +22,12 @@ const ARTICLE_NOT_FOUND = new ResponseError(
 @Route({ path: 'articles' })
 export class ArticleRoute {
 
-    @Controller('POST', '/', authenticate(), validate(newArticleSchema))
+    @Controller('POST', '/add', authenticate(), validate(newArticleSchema))
     async postArticle(req: Request, res: Response) {
         const body = req.body as NewArticleType;
-        const { id: userId } = getPayloadFromHeader(req)!;
+        const payload = getPayloadFromHeader(req)!;
 
-        const user = await User.findOne({ where: { id: userId } });
+        const user = await User.findOne({ where: { id: payload.id } });
         if (!user) {
             throw Errors.NO_SESSION;
         }
@@ -42,7 +42,7 @@ export class ArticleRoute {
     }
 
     @Controller(
-        'DELETE', '/:articleId',
+        'DELETE', '/delete/:articleId',
         authenticate(), validate(articleIdSchema, true)
     )
     async deleteArticle(req: Request, res: Response) {
@@ -69,6 +69,40 @@ export class ArticleRoute {
         await Article.save(article);
 
         return sendResponse(res, { message: 'Successfully deleted article' });
+    }
+
+    @Controller('PUT', '/update/:articleId', authenticate())
+    async changeArticleStatus(req: Request, res: Response) {
+        const payload = getPayloadFromHeader(req)!;
+        const user = await User.findOne({ where: { id: payload.id } });
+        const { articleId } = req.params;
+
+        if (!user) {
+            throw Errors.NO_SESSION;
+        }
+        if (!user.hasAnyAccess('EDITOR', 'ADMIN')) {
+            throw Errors.NO_PERMISSION;
+        }
+
+        const article = await Article.findOne({
+            where: { id: parseInt(articleId) }
+        });
+
+        if (!article) {
+            throw ARTICLE_NOT_FOUND;
+        }
+
+        const isPending = article.status === ArticleStatuses.PENDING;
+        if (isPending) {
+            article.status = ArticleStatuses.APPROVED;
+        } else {
+            article.status = ArticleStatuses.PENDING;
+        }
+
+        await Article.save(article);
+        return sendResponse(res, {
+            message: 'Succesfully change article status'
+        });
     }
 
     @Controller('GET', '/', authenticate(), urlencoded({ extended: true }))
@@ -158,41 +192,6 @@ export class ArticleRoute {
         return sendResponse(res, {
             message: 'Found article(s)',
             data: { articles: output }
-        });
-    }
-
-    @Controller('PUT', '/:articleId', authenticate())
-    async changeArticleStatus(req: Request, res: Response) {
-        const payload = getPayloadFromHeader(req)!;
-        const { articleId } = req.params;
-
-        const user = await User.findOne({ where: { id: payload.id } });
-
-        if (!user) {
-            throw Errors.NO_SESSION;
-        }
-        if (!user.hasAnyAccess('EDITOR')) {
-            throw Errors.NO_PERMISSION;
-        }
-
-        const article = await Article.findOne({
-            where: { id: parseInt(articleId) }
-        });
-
-        if (!article) {
-            throw ARTICLE_NOT_FOUND;
-        }
-
-        const isPending = article.status === ArticleStatuses.PENDING;
-        if (isPending) {
-            article.status = ArticleStatuses.APPROVED;
-        } else {
-            article.status = ArticleStatuses.PENDING;
-        }
-
-        await Article.save(article);
-        return sendResponse(res, {
-            message: 'Succesfully change article status'
         });
     }
 
