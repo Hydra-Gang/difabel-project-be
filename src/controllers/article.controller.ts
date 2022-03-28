@@ -109,13 +109,12 @@ export class ArticleRoute {
     async getArticlesByStatus(req: Request, res: Response) {
         const payload = getPayloadFromHeader(req)!;
         const status = req.query.status as string;
-
         const user = await User.findOne({ where: { id: payload.id } });
 
         if (!user) {
             throw Errors.NO_SESSION;
         }
-        if (!user.hasAnyAccess('EDITOR')) {
+        if (!user.hasAnyAccess('EDITOR', 'ADMIN')) {
             throw Errors.NO_PERMISSION;
         }
 
@@ -133,12 +132,12 @@ export class ArticleRoute {
     async getAllArticles(req: Request, res: Response) {
         const payload = getPayloadFromHeader(req);
         let user: User | undefined;
-        let output: unknown[];
 
         if (payload) {
             user = await User.findOne({ where: { id: payload.id } });
         }
 
+        let output;
         if (user?.hasAnyAccess('EDITOR', 'ADMIN')) {
             output = await Article.find();
         } else {
