@@ -9,6 +9,7 @@
 
 import { Router, Request, Response, NextFunction } from 'express';
 import { routerMap } from '../decorators/express.decorator';
+import { ANSI } from '../utils/ansi.util';
 import {
     AsyncHandlerWrapper,
     ControllerDataType,
@@ -19,11 +20,6 @@ import {
 
 import fs from 'fs';
 import nodePath from 'node:path';
-
-const ANSI = {
-    GREEN: '\x1b[0;93m',
-    RESET: '\x1b[0m'
-};
 
 /**
  * Wraps the {@link HandlerFunction} inside a {@link Promise}.
