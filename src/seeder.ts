@@ -134,7 +134,7 @@ createConnection(connectionConfig)
             article.author = newUsers[randomRange(0, articles.length)];
             if (article.status === ArticleStatuses.APPROVED) {
                 // permissible users are in idx 0 - 2
-                article.approver = newUsers[randomRange(0, 2)];
+                article.approver = newUsers[randomRange(0, 1)];
             }
         }
 
