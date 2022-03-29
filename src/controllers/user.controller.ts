@@ -25,7 +25,7 @@ export class UserRoute {
 
         return sendResponse(res, {
             message: 'Successfully found user data',
-            data: { user: user.filter(false) }
+            data: { user: user.filter(true) }
         });
     }
 
