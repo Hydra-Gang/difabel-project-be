@@ -33,7 +33,13 @@ export class Report extends BaseEntity {
     @JoinColumn({ name: 'resolver_id' })
     resolver?: User;
 
-    @Column({ name: 'resolver_id', nullable: true })
-    resolverId?: number;
+    filter() {
+        const { resolver } = this;
+        const cloned = { ...this } as Record<string, unknown>;
+
+        if (resolver) {
+            cloned.resolver = resolver.filter(false);
+        }
+    }
 
 }

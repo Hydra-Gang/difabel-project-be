@@ -18,11 +18,12 @@ export class ReportRoute {
 
     @Controller('GET', '/', authenticate())
     async getReports(req: Request, res: Response) {
-        const reports = await Report.find();
+        const reports = await Report.find({ relations: ['resolver'] });
+        const output = reports.map((report) => report.filter());
 
         return sendResponse(res, {
             message: 'Managed to get all reports',
-            data: { reports }
+            data: { reports: output }
         });
     }
 
