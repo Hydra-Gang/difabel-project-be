@@ -42,22 +42,25 @@ export class Article extends BaseEntity {
     @JoinColumn({ name: 'approver_id' })
     approver?: User;
 
-    @Column({ name: 'author_id' })
-    authorId!: number;
-
-    @Column({ name: 'approver_id', nullable: true })
-    approverId?: number;
-
     /**
-     * Gets the filtered version of the object
+     * Gets the filtered version of the object.
+     * We need to limit the information sent to the users.
      *
-     * NOTE: The object will lose it's reference.
+     * @param isEditor If it's for an admin, it'll show more information.
      */
-    filter() {
+    filter(isEditor: boolean) {
+        const { approver, author } = this;
         const cloned = { ...this } as Record<string, unknown>;
 
-        delete cloned.status;
-        delete cloned.isDeleted;
+        cloned.author = author.filter(false);
+        if (approver) {
+            cloned.approver = approver.filter(false);
+        }
+
+        if (!isEditor) {
+            delete cloned.status;
+            delete cloned.isDeleted;
+        }
 
         return cloned;
     }
