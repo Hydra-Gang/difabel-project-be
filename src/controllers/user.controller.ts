@@ -3,13 +3,8 @@ import authenticate from '../middlewares/authenticate.middleware';
 import { Request, Response } from 'express';
 import { Controller, Route } from '../decorators/express.decorator';
 import { AccessLevels, User } from '../entities/user.entity';
-import { sendResponse, Errors, ResponseError } from '../utils/api.util';
+import { sendResponse, Errors } from '../utils/api.util';
 import { getPayloadFromHeader } from '../utils/auth.util';
-import { StatusCodes } from 'http-status-codes';
-
-const USER_NOT_FOUND = new ResponseError(
-    'Cannot find user',
-    StatusCodes.NOT_FOUND);
 
 @Route({ path: 'users' })
 export class UserRoute {
@@ -25,7 +20,7 @@ export class UserRoute {
 
         return sendResponse(res, {
             message: 'Successfully found user data',
-            data: { user: user.filter(false) }
+            data: { user: user.filter(true) }
         });
     }
 
@@ -47,7 +42,7 @@ export class UserRoute {
         });
 
         if (!targetUser) {
-            throw USER_NOT_FOUND;
+            throw Errors.USER_NOT_FOUND;
         }
 
         if (targetUser.hasAnyAccess('CONTRIBUTOR')) {
@@ -92,22 +87,24 @@ export class UserRoute {
     @Controller('GET', '/:userId', authenticate())
     async getUserById(req: Request, res: Response) {
         const payload = getPayloadFromHeader(req)!;
+        const user = await User.findOne({ where: { id: payload.id } });
         const { userId } = req.params;
 
-        const user = await User.findOne({ where: { id: payload.id } });
         if (!user) {
             throw Errors.NO_SESSION;
+        }
+        if (!user.hasAnyAccess('ADMIN')) {
+            throw Errors.NO_PERMISSION;
         }
 
         const targetUser = await User.findOne({
             where: { id: parseInt(userId) }
         });
         if (!targetUser) {
-            throw USER_NOT_FOUND;
+            throw Errors.USER_NOT_FOUND;
         }
 
-        const isAdmin = user.hasAnyAccess('ADMIN');
-        const output = targetUser.filter(isAdmin);
+        const output = targetUser.filter(true);
 
         return sendResponse(res, {
             message: 'Successfully found user',
