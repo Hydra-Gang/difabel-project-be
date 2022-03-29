@@ -40,6 +40,8 @@ export class Report extends BaseEntity {
         if (resolver) {
             cloned.resolver = resolver.filter(false);
         }
+
+        return cloned;
     }
 
 }
