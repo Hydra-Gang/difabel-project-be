@@ -81,5 +81,12 @@ export const Errors = {
      */
     NO_PERMISSION: new ResponseError(
         "You don't have the permission to access this content",
-        StatusCodes.FORBIDDEN)
+        StatusCodes.FORBIDDEN),
+
+    /**
+     * Cannot find the user it's trying to find
+     */
+    USER_NOT_FOUND: new ResponseError(
+        'Cannot find user',
+        StatusCodes.NOT_FOUND)
 };
