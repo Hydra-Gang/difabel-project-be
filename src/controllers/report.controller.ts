@@ -39,7 +39,7 @@ export class ReportRoute {
         });
     }
 
-    @Controller('PUT', '/update/:reportId', authenticate())
+    @Controller('PUT', '/status/:reportId', authenticate())
     async updateReportStatus(req: Request, res: Response) {
         const reportId = parseInt(req.params.reportId);
         const payload = getPayloadFromHeader(req)!;
