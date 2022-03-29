@@ -92,11 +92,14 @@ export class UserRoute {
     @Controller('GET', '/:userId', authenticate())
     async getUserById(req: Request, res: Response) {
         const payload = getPayloadFromHeader(req)!;
+        const user = await User.findOne({ where: { id: payload.id } });
         const { userId } = req.params;
 
-        const user = await User.findOne({ where: { id: payload.id } });
         if (!user) {
             throw Errors.NO_SESSION;
+        }
+        if (!user.hasAnyAccess('ADMIN')) {
+            throw Errors.NO_PERMISSION;
         }
 
         const targetUser = await User.findOne({
@@ -106,8 +109,7 @@ export class UserRoute {
             throw USER_NOT_FOUND;
         }
 
-        const isAdmin = user.hasAnyAccess('ADMIN');
-        const output = targetUser.filter(isAdmin);
+        const output = targetUser.filter(true);
 
         return sendResponse(res, {
             message: 'Successfully found user',
