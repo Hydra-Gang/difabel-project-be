@@ -8,7 +8,7 @@ import { User } from '../entities/user.entity';
 import { Article, ArticleStatuses } from '../entities/article.entity';
 import { StatusCodes } from 'http-status-codes';
 import { Errors, ResponseError, sendResponse } from '../utils/api.util';
-import { FindManyOptions } from 'typeorm';
+import { FindOneOptions } from 'typeorm';
 import {
     articleIdSchema,
     newArticleSchema,
@@ -122,12 +122,14 @@ export class ArticleRoute {
         }
 
         const articles = await Article.find({
-            where: { status: parseInt(status) }
+            where: { status: parseInt(status) },
+            relations: ['author', 'approver']
         });
 
+        const output = articles.map((article) => article.filter(true));
         return sendResponse(res, {
             message: 'Found article(s)',
-            data: { articles }
+            data: { articles: output }
         });
     }
 
@@ -140,20 +142,20 @@ export class ArticleRoute {
             user = await User.findOne({ where: { id: payload.id } });
         }
 
-        let output;
-        if (user?.hasAnyAccess('EDITOR', 'ADMIN')) {
-            output = await Article.find();
-        } else {
-            const filterOption: FindManyOptions<Article> = {
-                where: {
-                    status: ArticleStatuses.APPROVED,
-                    isDeleted: false
-                }
-            };
+        const hasPermission = !!user?.hasAnyAccess('EDITOR', 'ADMIN');
+        const defaultOption: FindOneOptions<Article> = {
+            relations: ['author', 'approver']
+        };
 
-            const articles = await Article.find(filterOption);
-            output = articles.map((article) => article.filter());
+        if (!hasPermission) {
+            defaultOption.where = {
+                status: ArticleStatuses.APPROVED,
+                isDeleted: false
+            };
         }
+
+        const articles = await Article.find(defaultOption);
+        const output = articles.map((article) => article.filter(hasPermission));
 
         return sendResponse(res, {
             message: 'Found article(s)',
@@ -173,7 +175,8 @@ export class ArticleRoute {
         }
 
         const article = await Article.findOne({
-            where: { id: parseInt(articleId) }
+            where: { id: parseInt(articleId) },
+            relations: ['author', 'approver']
         });
 
         if (!article) {
@@ -189,10 +192,11 @@ export class ArticleRoute {
             throw ARTICLE_NOT_FOUND;
         }
 
+        const output = article.filter(hasPermission);
         return sendResponse(res, {
             message: 'Article is found',
             data: {
-                article: (hasPermission ? article : article.filter())
+                article: output
             }
         });
     }
