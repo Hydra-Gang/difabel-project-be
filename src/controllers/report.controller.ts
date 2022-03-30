@@ -27,7 +27,7 @@ export class ReportRoute {
         });
     }
 
-    @Controller('POST', '/add', authenticate(), validate(newReportSchema))
+    @Controller('POST', '/add', validate(newReportSchema))
     async addReport(req: Request, res: Response) {
         const body = req.body as NewReportType;
 
