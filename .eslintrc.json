@@ -32,6 +32,9 @@
         "@typescript-eslint/prefer-string-starts-ends-with": "error",
         "@typescript-eslint/prefer-optional-chain": "error",
         "@typescript-eslint/prefer-nullish-coalescing": "error",
+        "@typescript-eslint/class-literal-property-style": ["error", "fields"],
+        "@typescript-eslint/consistent-indexed-object-style": ["error", "record"],
+        "@typescript-eslint/consistent-type-definitions": ["error", "type"],
 
         // import
         "import/first": "error",
@@ -54,7 +57,6 @@
         "no-useless-constructor": "error",
         "no-useless-return": "error",
         "no-useless-call": "error",
-        "no-unused-vars": "warn",
         "no-unused-expressions": "error",
         "no-unneeded-ternary": "error",
         "no-undef-init": "error",
@@ -118,6 +120,12 @@
         "semi": "error",
         "yoda": "warn",
 
+        "@typescript-eslint/array-type": [
+            "error",
+            {
+                "default": "array"
+            }
+        ],
         "quotes": [
             "error",
             "single",

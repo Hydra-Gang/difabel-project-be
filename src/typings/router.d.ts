@@ -48,9 +48,7 @@ declare type RouterFunction =
  * to accept string (like keys in object)
  * and run the function based on {@link RequestMethods}.
  */
-declare type RouterHandlerType = {
-    [funcName: string]: RouterFunction
-}
+declare type RouterHandlerType = Record<string, RouterFunction>
 
 // ---------------------------------------------------- //
 
@@ -86,12 +84,8 @@ declare type ControllerDataType = {
 // ---------------------------------------------------- //
 
 declare type RouterMap = {
-    routes: {
-        [route: string]: RouteDataType
-    },
-    controllers: {
-        [route: string]: ControllerDataType[]
-    }
+    routes: Record<string, RouteDataType>,
+    controllers: Record<string, ControllerDataType[]>
 }
 
 declare type RouterOptions = {
