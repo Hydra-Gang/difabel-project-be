@@ -18,7 +18,8 @@
         "typeorm": "node ./node_modules/typeorm/cli.js",
         "lint": "eslint ./src",
         "lint:fix": "eslint ./src --fix",
-        "jwt:generate": "node ./scripts/jwt-generate.js"
+        "jwt:generate": "node ./scripts/jwt-generate.js",
+        "seed": "yarn compile && node ./dist/seeder.js"
     },
     "devDependencies": {
         "@types/bcrypt": "^5.0.0",
@@ -33,7 +34,6 @@
         "eslint": "^8.11.0",
         "eslint-import-resolver-typescript": "^2.5.0",
         "eslint-plugin-import": "^2.25.4",
-        "nodemon": "^2.0.15",
         "rimraf": "^3.0.2",
         "typescript": "^4.6.2"
     },

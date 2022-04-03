@@ -7,12 +7,13 @@ const config = {
     jwt: {
         accessSecret: env.JWT_ACCESS_SECRET!,
         refreshSecret: env.JWT_REFRESH_SECRET!,
-        expireTime: '15m',
-        notBeforeTime: '3s'
+
+        accessExpire: '15m',
+        refreshExpire: '30d',
+
+        notBefore: '3s'
     },
-    hash: {
-        rounds: 12
-    },
+    hashRounds: 12,
     db: {
         host: env.DB_HOST!,
         database: env.DB_DATABASE!,
