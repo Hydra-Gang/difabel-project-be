@@ -112,6 +112,7 @@
         "template-curly-spacing": "error",
         "brace-style": "error",
         "block-spacing": "error",
+        "quote-props": ["error", "as-needed"],
         "eqeqeq": "error",
         "curly": "error",
         "semi": "error",
