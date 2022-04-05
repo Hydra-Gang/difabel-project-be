@@ -16,7 +16,14 @@
         // but the ts check is not that accurate
         "skipLibCheck": true
     },
+    "ts-node": {
+        "transpileOnly": true
+    },
     "include": [
         "./src/**/*"
+    ],
+    "exclude": [
+        "./src/seeder.ts",
+        "./src/migrations/*"
     ]
 }
