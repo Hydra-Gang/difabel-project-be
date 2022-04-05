@@ -13,7 +13,7 @@ export class UserRoute {
     async getUser(req: Request, res: Response) {
         const payload = getPayloadFromHeader(req)!;
 
-        const user = await User.findOne({ where: { id: payload.id } });
+        const user = await User.findOneBy({ id: payload.id });
         if (!user) {
             throw Errors.NO_SESSION;
         }
@@ -29,7 +29,7 @@ export class UserRoute {
         const payload = getPayloadFromHeader(req)!;
         const { userId } = req.params;
 
-        const user = await User.findOne({ where: { id: payload.id } });
+        const user = await User.findOneBy({ id: payload.id });
         if (!user) {
             throw Errors.NO_SESSION;
         }
@@ -37,10 +37,7 @@ export class UserRoute {
             throw Errors.NO_PERMISSION;
         }
 
-        const targetUser = await User.findOne({
-            where: { id: parseInt(userId) }
-        });
-
+        const targetUser = await User.findOneBy({ id: parseInt(userId) });
         if (!targetUser) {
             throw Errors.USER_NOT_FOUND;
         }
@@ -60,7 +57,7 @@ export class UserRoute {
     @Controller('GET', '/', authenticate())
     async getAllUsers(req: Request, res: Response) {
         const payload = getPayloadFromHeader(req)!;
-        const user = await User.findOne({ where: { id: payload.id } });
+        const user = await User.findOneBy({ id: payload.id });
 
         if (!user) {
             throw Errors.NO_SESSION;
@@ -87,8 +84,7 @@ export class UserRoute {
     @Controller('GET', '/:userId', authenticate())
     async getUserById(req: Request, res: Response) {
         const payload = getPayloadFromHeader(req)!;
-        const user = await User.findOne({ where: { id: payload.id } });
-        const { userId } = req.params;
+        const user = await User.findOneBy({ id: payload.id });
 
         if (!user) {
             throw Errors.NO_SESSION;
@@ -97,15 +93,14 @@ export class UserRoute {
             throw Errors.NO_PERMISSION;
         }
 
-        const targetUser = await User.findOne({
-            where: { id: parseInt(userId) }
-        });
+        const { userId } = req.params;
+        const targetUser = await User.findOneBy({ id: parseInt(userId) });
+
         if (!targetUser) {
             throw Errors.USER_NOT_FOUND;
         }
 
         const output = targetUser.filter(true);
-
         return sendResponse(res, {
             message: 'Successfully found user',
             data: { user: output }

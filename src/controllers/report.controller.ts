@@ -18,7 +18,7 @@ export class ReportRoute {
 
     @Controller('GET', '/', authenticate())
     async getReports(req: Request, res: Response) {
-        const reports = await Report.find({ relations: ['resolver'] });
+        const reports = await Report.find({ relations: { resolver: true } });
         const output = reports.map((report) => report.filter());
 
         return sendResponse(res, {
@@ -44,7 +44,7 @@ export class ReportRoute {
     async updateReportStatus(req: Request, res: Response) {
         const reportId = parseInt(req.params.reportId);
         const payload = getPayloadFromHeader(req)!;
-        const user = await User.findOne({ where: { id: payload.id } });
+        const user = await User.findOneBy({ id: payload.id });
 
         if (!user) {
             throw Errors.NO_SESSION;

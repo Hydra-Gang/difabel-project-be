@@ -1,14 +1,13 @@
 // max-len isn't needed here
 /* eslint-disable max-len */
 
-import connectionConfig from './ormconfig';
 import bcrypt from 'bcrypt';
 import config from './configs/config';
 
+import { appDataSource } from './ormconfig';
 import { User, AccessLevels } from './entities/user.entity';
 import { Article, ArticleStatuses } from './entities/article.entity';
 import { Report, ReportStatuses } from './entities/report.entity';
-import { createConnection } from 'typeorm';
 
 // -------------------------------------------------------------------- //
 
@@ -124,12 +123,11 @@ function createData(): [User[], Article[], Report[]] {
 
 // -------------------------------------------------------------------- //
 
-createConnection(connectionConfig)
+appDataSource.initialize()
     .then(async () => {
         const [users, articles, reports] = createData();
 
         const newUsers = await User.save(users);
-
         for (const article of articles) {
             article.author = newUsers[randomRange(0, articles.length)];
             if (article.status === ArticleStatuses.APPROVED) {

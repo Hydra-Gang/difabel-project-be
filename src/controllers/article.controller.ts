@@ -27,7 +27,7 @@ export class ArticleRoute {
         const body = req.body as NewArticleType;
         const payload = getPayloadFromHeader(req)!;
 
-        const user = await User.findOne({ where: { id: payload.id } });
+        const user = await User.findOneBy({ id: payload.id });
         if (!user) {
             throw Errors.NO_SESSION;
         }
@@ -49,7 +49,7 @@ export class ArticleRoute {
         const payload = getPayloadFromHeader(req)!;
         const { articleId } = req.params;
 
-        const user = await User.findOne({ where: { id: payload.id } });
+        const user = await User.findOneBy({ id: payload.id });
         if (!user) {
             throw Errors.NO_SESSION;
         }
@@ -57,9 +57,7 @@ export class ArticleRoute {
             throw Errors.NO_PERMISSION;
         }
 
-        const article = await Article.findOne({
-            where: { id: parseInt(articleId) }
-        });
+        const article = await Article.findOneBy({ id: parseInt(articleId) });
 
         if (!article) {
             throw ARTICLE_NOT_FOUND;
@@ -74,8 +72,7 @@ export class ArticleRoute {
     @Controller('PUT', '/status/:articleId', authenticate())
     async changeArticleStatus(req: Request, res: Response) {
         const payload = getPayloadFromHeader(req)!;
-        const user = await User.findOne({ where: { id: payload.id } });
-        const { articleId } = req.params;
+        const user = await User.findOneBy({ id: payload.id });
 
         if (!user) {
             throw Errors.NO_SESSION;
@@ -84,9 +81,8 @@ export class ArticleRoute {
             throw Errors.NO_PERMISSION;
         }
 
-        const article = await Article.findOne({
-            where: { id: parseInt(articleId) }
-        });
+        const { articleId } = req.params;
+        const article = await Article.findOneBy({ id: parseInt(articleId) });
 
         if (!article) {
             throw ARTICLE_NOT_FOUND;
@@ -112,7 +108,7 @@ export class ArticleRoute {
     async getArticlesFiltered(req: Request, res: Response) {
         const payload = getPayloadFromHeader(req)!;
         const status = req.query.status as string;
-        const user = await User.findOne({ where: { id: payload.id } });
+        const user = await User.findOneBy({ id: payload.id });
 
         if (!user) {
             throw Errors.NO_SESSION;
@@ -123,7 +119,7 @@ export class ArticleRoute {
 
         const articles = await Article.find({
             where: { status: parseInt(status) },
-            relations: ['author', 'approver']
+            relations: { author: true, approver: true }
         });
 
         const output = articles.map((article) => article.filter(true));
@@ -136,15 +132,15 @@ export class ArticleRoute {
     @Controller('GET', '/')
     async getAllArticles(req: Request, res: Response) {
         const payload = getPayloadFromHeader(req);
-        let user: User | undefined;
+        let user = null;
 
         if (payload) {
-            user = await User.findOne({ where: { id: payload.id } });
+            user = await User.findOneBy({ id: payload.id });
         }
 
         const hasPermission = !!user?.hasAnyAccess('EDITOR', 'ADMIN');
         const defaultOption: FindOneOptions<Article> = {
-            relations: ['author', 'approver']
+            relations: { author: true, approver: true }
         };
 
         if (!hasPermission) {
@@ -167,16 +163,16 @@ export class ArticleRoute {
     async getArticle(req: Request, res: Response) {
         const { articleId } = req.params;
 
-        let user: User | undefined;
         const payload = getPayloadFromHeader(req);
+        let user = null;
 
         if (payload) {
-            user = await User.findOne({ where: { id: payload.id } });
+            user = await User.findOneBy({ id: payload.id });
         }
 
         const article = await Article.findOne({
             where: { id: parseInt(articleId) },
-            relations: ['author', 'approver']
+            relations: { author: true, approver: true }
         });
 
         if (!article) {

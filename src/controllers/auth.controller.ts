@@ -26,9 +26,7 @@ export class AuthRoute {
     async login(req: Request, res: Response) {
         const body = req.body as LoginType;
 
-        const foundUser = await User.findOne({
-            where: { email: body.email }
-        });
+        const foundUser = await User.findOneBy({ email: body.email });
 
         if (!foundUser) {
             throw new ResponseError(
@@ -60,9 +58,7 @@ export class AuthRoute {
         const body = req.body as RegisterType;
         const user = User.create({ ...body });
 
-        const foundUser = await User.findOne({
-            where: { email: user.email }
-        });
+        const foundUser = await User.findOneBy({ email: user.email });
 
         if (foundUser) {
             throw new ResponseError(
