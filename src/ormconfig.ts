@@ -1,3 +1,4 @@
+import 'reflect-metadata';
 import config from './configs/config';
 
 import { DataSource } from 'typeorm';

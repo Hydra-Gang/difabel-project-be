@@ -1,5 +1,3 @@
-import 'reflect-metadata';
-
 import app, { errorHandling } from './app';
 import { appDataSource } from './ormconfig';
 import { createGlobalRouter } from './routes';
