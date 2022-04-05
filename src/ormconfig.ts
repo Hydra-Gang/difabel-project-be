@@ -1,8 +1,8 @@
 import config from './configs/config';
 
-import { ConnectionOptions } from 'typeorm';
+import { DataSource } from 'typeorm';
 
-const connectionConfig: ConnectionOptions = {
+export const appDataSource = new DataSource({
     type: 'postgres',
     host: config.db.host,
     port: 5432,
@@ -10,20 +10,7 @@ const connectionConfig: ConnectionOptions = {
     password: config.db.password,
     database: config.db.database,
     synchronize: true,
-    entities: [
-        'dist/entities/**/*.js'
-    ],
-    migrations: [
-        'dist/migrations/**/*.js'
-    ],
-    subscribers: [
-        'dist/subscribers/**/*.js'
-    ],
-    cli: {
-        entitiesDir: 'src/entities',
-        migrationsDir: 'src/migrations',
-        subscribersDir: 'src/subscribers'
-    }
-};
-
-export default connectionConfig;
+    entities: ['dist/entities/**/*.js'],
+    migrations: ['dist/migrations/**/*.js'],
+    subscribers: ['dist/subscribers/**/*.js']
+});
