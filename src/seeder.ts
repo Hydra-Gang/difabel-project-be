@@ -1,14 +1,16 @@
 // max-len isn't needed here
 /* eslint-disable max-len */
 
-import connectionConfig from './ormconfig';
 import bcrypt from 'bcrypt';
 import config from './configs/config';
 
+import { appDataSource } from './ormconfig';
 import { User, AccessLevels } from './entities/user.entity';
 import { Article, ArticleStatuses } from './entities/article.entity';
 import { Report, ReportStatuses } from './entities/report.entity';
-import { createConnection } from 'typeorm';
+import { Location } from './entities/location.entity';
+import { Donation } from './entities/donation.entity';
+import { ANSI } from './utils/ansi.util';
 
 // -------------------------------------------------------------------- //
 
@@ -22,7 +24,7 @@ function randomRange(min: number, max: number) {
     return Math.floor((Math.random() * (max - min + 1)) + min);
 }
 
-function createData(): [User[], Article[], Report[]] {
+function createData(): [User[], Article[], Report[], Location[], Donation[]] {
     const users: User[] = [
         User.create({
             fullName: 'Mr. Admin',
@@ -119,17 +121,49 @@ function createData(): [User[], Article[], Report[]] {
         })
     ];
 
-    return [users, articles, reports];
+    const locations: Location[] = [
+        Location.create({
+            name: 'Leon hart',
+            type: 'Intellect',
+            address: 'Kimia Farma Paint Bandung Pt., Pasir Kaliki, Kec. Cicendo, Kota Bandung, Jawa Barat',
+            latitude: -6.907547,
+            longitude: 107.603505
+        }),
+        Location.create({
+            id: 3,
+            name: 'Albert Derth',
+            type: 'Mental',
+            address: 'Jl. Pramuka Sari II No.1, RW.1, Palmeriam, Kec. Matraman, Kota Jakarta Timur, Daerah Khusus Ibukota Jakarta 13140',
+            latitude: -6.197499,
+            longitude: 106.856857
+        })
+    ];
+
+    const donations: Donation[] = [
+        Donation.create({
+            donator: 'Fajar',
+            money: 10_000_000
+        }),
+        Donation.create({
+            donator: 'Julian',
+            money: 20_000_000
+        }),
+        Donation.create({
+            donator: 'Leo',
+            money: 15_000_000
+        })
+    ];
+
+    return [users, articles, reports, locations, donations];
 }
 
 // -------------------------------------------------------------------- //
 
-createConnection(connectionConfig)
+appDataSource.initialize()
     .then(async () => {
-        const [users, articles, reports] = createData();
+        const [users, articles, reports, locations, donations] = createData();
 
         const newUsers = await User.save(users);
-
         for (const article of articles) {
             article.author = newUsers[randomRange(0, articles.length)];
             if (article.status === ArticleStatuses.APPROVED) {
@@ -150,7 +184,10 @@ createConnection(connectionConfig)
         await Article.save(articles);
         await Report.save(reports);
 
-        console.log('Data seeding has finished!');
+        await Location.save(locations);
+        await Donation.save(donations);
+
+        console.log(`${ANSI.GREEN}Data seeding has finished!${ANSI.RESET}`);
         process.exit();
     })
     .catch((err) => console.error(err));

@@ -115,6 +115,8 @@
         "brace-style": "error",
         "block-spacing": "error",
         "quote-props": ["error", "as-needed"],
+        "object-curly-spacing": ["error", "always"],
+        "dot-location": ["error", "property"],
         "eqeqeq": "error",
         "curly": "error",
         "semi": "error",
@@ -156,10 +158,6 @@
                 "ignoreTemplateLiterals": true
             }
         ],
-        "dot-location": [
-            "error",
-            "property"
-        ],
         "space-before-function-paren": [
             "error",
             {
@@ -194,10 +192,6 @@
             {
                 "allowArrowFunctions": true
             }
-        ],
-        "object-curly-spacing": [
-            "error",
-            "always"
         ],
         "no-multi-spaces": [
             "error",

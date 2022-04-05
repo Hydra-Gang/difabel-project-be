@@ -16,6 +16,9 @@
         // but the ts check is not that accurate
         "skipLibCheck": true
     },
+    "ts-node": {
+        "transpileOnly": true
+    },
     "include": [
         "./src/**/*"
     ]

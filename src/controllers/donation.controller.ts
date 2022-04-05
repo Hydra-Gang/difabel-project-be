@@ -30,7 +30,7 @@ export class DonationRoute {
     @Controller('GET', '/', authenticate())
     async getAllDonations(req: Request, res: Response) {
         const payload = getPayloadFromHeader(req)!;
-        const user = await User.findOne({ where: { id: payload.id } });
+        const user = await User.findOneBy({ id: payload.id });
 
         if (!user) {
             throw Errors.NO_SESSION;
