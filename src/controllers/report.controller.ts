@@ -53,11 +53,9 @@ export class ReportRoute {
             throw Errors.NO_PERMISSION;
         }
 
-        const report = await Report.findOne({
-            where: {
-                id: reportId,
-                status: ReportStatuses.PENDING
-            }
+        const report = await Report.findOneBy({
+            id: reportId,
+            status: ReportStatuses.PENDING
         });
 
         if (!report) {
