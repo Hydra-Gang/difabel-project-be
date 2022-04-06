@@ -1,6 +1,9 @@
 # About
 Backend of the difabel project. This project is using the project template from BNCC@Bandung RnD division.
 
+# Entity-Relationship Diagram
+![difabel-erd](.github/difabel-erd.png)
+
 ## Quick Start
 1. Make sure you have installed [yarn](https://classic.yarnpkg.com/lang/en/) and [PostgreSQL](https://www.postgresql.org/download/).
 1. Clone the repo
@@ -31,18 +34,18 @@ Backend of the difabel project. This project is using the project template from 
  |--scripts\             # User scripts for automating
  |--src\                 # Source folder
      |--configs\         # Application configs
-     |--controllers\     # Route controllers
+     |--controllers\     # Routes and controllers
      |--decorators\      # Custom decorators
      |--entities\        # Database models/entities (represents table)
      |--middlewares\     # Custom middlewares
      |--routes\          # Server routes, provides automatic routing
      |--typings\         # Custom types/interface for type assertion
-     |--utils\           # Utility classes and functions
-         |--api.util.ts  # Server response utility
-     |--validations\     # Schemas for validating JSON
+     |--utils\           # Utility functions and/or classes
+     |--validations\     # Schemas for validating JSON requests
      |--app.ts           # Express app and it's configuration
-     |--ormconfig.ts     # TypeORM config
-     |--server.ts        # Program entry point (db connection is also here)
+     |--ormconfig.ts     # TypeORM datasource configuration
+     |--seeder.ts        # Populates the database with prepared data
+     |--server.ts        # Program entry point (include database )
  |--.eslintrc.json       # ESLint config
  |--tsconfig.json        # TypeScript compiler config
  |--...
