@@ -3,7 +3,7 @@
     "compilerOptions": {
         "target": "ES6",
         "module": "CommonJS",
-        "outDir": "./dist/",
+        "outDir": "./build",
         "strict": true,
         "removeComments": true,
         "moduleResolution": "Node",
@@ -19,6 +19,6 @@
         "transpileOnly": true
     },
     "include": [
-        "./src/**/*"
+        "./src/**/*.ts"
     ]
 }

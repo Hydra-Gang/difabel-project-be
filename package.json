@@ -14,7 +14,7 @@
         "start": "node ./dist/server.js",
         "compile": "yarn clean && tsc",
         "compile:debug": "yarn compile --diagnostics",
-        "clean": "rimraf ./dist",
+        "clean": "rimraf ./build",
         "typeorm": "typeorm-ts-node-commonjs --transpileOnly",
         "lint": "eslint ./src",
         "lint:fix": "eslint ./src --fix",

@@ -54,7 +54,7 @@ Backend of the difabel project. This project is using the project template from 
 ## Commands
 Running:
 ```sh
-# compiles the project to `dist` directory
+# compiles the project to `build` directory
 yarn compile
 
 # diagnose the TS compiler
@@ -73,7 +73,7 @@ Data seeding:
 yarn seed
 ```
 
-Cleans the compiled files (in `dist` directory):
+Cleans the compiled files (in `build` directory):
 ```sh
 yarn clean
 ```
