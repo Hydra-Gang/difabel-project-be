@@ -1,4 +1,6 @@
-import app, { errorHandling } from './app';
+import app from './app';
+import errorHandling from './middlewares/error-handler.middleware';
+
 import { appDataSource } from './ormconfig';
 import { createGlobalRouter } from './routes';
 
