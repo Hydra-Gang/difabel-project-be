@@ -1,5 +1,6 @@
 import app from './app';
 import errorHandling from './middlewares/error-handler.middleware';
+import logger from './utils/logger.util';
 
 import { appDataSource } from './ormconfig';
 import { createGlobalRouter } from './routes';
@@ -14,5 +15,6 @@ app.listen(port, async () => {
 
     await appDataSource.initialize();
 
-    console.log(`\nServer is hosted at http://localhost:${port}/`);
+    console.log();
+    logger.info(`Server is hosted at http://localhost:${port}/`);
 });
