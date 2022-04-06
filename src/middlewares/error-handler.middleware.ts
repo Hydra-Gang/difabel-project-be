@@ -1,6 +1,7 @@
+import logger from '../utils/logger.util';
+
 import { Request, Response, NextFunction } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { ANSI } from '../utils/ansi.util';
 import {
     ResponseError,
     sendResponse, Errors
@@ -18,15 +19,7 @@ function errorHandling(
     }
 
     if (error.statusCode === StatusCodes.INTERNAL_SERVER_ERROR) {
-        const { stdout } = process;
-
-        stdout.write(ANSI.RED);
-        stdout.write(`${error}\n`);
-
-        stdout.write(ANSI.DARK_RED);
-        stdout.write(`${error.stack}`);
-
-        stdout.write(`${ANSI.RESET}\n`);
+        logger.error(`${error}\n${error.stack}`);
     }
 
     return sendResponse(res, ResponseError.toResponseBody(error));

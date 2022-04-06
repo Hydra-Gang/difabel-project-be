@@ -1,6 +1,7 @@
 import cors from 'cors';
 import helmet from 'helmet';
 import express from 'express';
+import handleLogging from './middlewares/logger.middleware';
 
 const app = express();
 
@@ -13,5 +14,6 @@ app.use(cors({
     preflightContinue: true
 }));
 app.use(express.json());
+app.use(handleLogging);
 
 export default app;
