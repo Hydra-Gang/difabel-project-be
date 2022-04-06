@@ -3,6 +3,7 @@
 
 import bcrypt from 'bcrypt';
 import config from './configs/config';
+import logger from './utils/logger.util';
 
 import { appDataSource } from './ormconfig';
 import { User, AccessLevels } from './entities/user.entity';
@@ -10,7 +11,6 @@ import { Article, ArticleStatuses } from './entities/article.entity';
 import { Report, ReportStatuses } from './entities/report.entity';
 import { Location } from './entities/location.entity';
 import { Donation } from './entities/donation.entity';
-import { ANSI } from './utils/ansi.util';
 
 // -------------------------------------------------------------------- //
 
@@ -187,7 +187,7 @@ appDataSource.initialize()
         await Location.save(locations);
         await Donation.save(donations);
 
-        console.log(`${ANSI.GREEN}Data seeding has finished!${ANSI.RESET}`);
+        logger.debug('Data seeding has finished!');
         process.exit();
     })
-    .catch((err) => console.error(err));
+    .catch((err: Error) => logger.error(`${err} ${err.stack}`));
