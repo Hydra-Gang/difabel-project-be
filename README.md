@@ -144,3 +144,16 @@ DB_PASSWORD=
 1. [jsonwebtoken](https://www.npmjs.com/package/jsonwebtoken) <br>
     * Token based user authentication, we need to know whether user is logged in or not.
     * It's [more secure](https://stackoverflow.com/a/38855050) when compared to _Cookie and Session_.
+1. [ts-node](https://www.npmjs.com/package/ts-node)
+    * Able to execute TypeScript Node.js without compiling.
+    * It's used in development environment, but not for production.
+1. [cross-env](https://www.npmjs.com/package/cross-env)
+    * Run Node.js scripts with custom environment without the need of .env.
+    * In Unix based OS, it's easy to achieve this even without `cross-env`,
+      but for Windows users it's harder or rather trickier.
+1. [morgan](https://www.npmjs.com/package/morgan)
+    * A logger middleware for HTTP request.
+    * The ability to know each events that has happened within the server is a good thing to have.
+1. [winston](https://www.npmjs.com/package/winston)
+    * Flexible logger for anything and everything, we can save the logs to files, database, you name it.
+    * It's the main logger that we use with `morgan`, and it's as powerful as ever.
