@@ -22,7 +22,7 @@ Backend of the difabel project. This project is using the project template from 
    ```
 1. Run the dev server
    ```sh
-   yarn auto
+   yarn dev
    ```
 
 ## Project Structure
@@ -60,8 +60,8 @@ yarn compile:debug
 # starts the program (must be compiled first)
 yarn start
 
-# automatically compiles and starts the program (not used in production)
-yarn auto
+# Runs the server in Development environment (no compiled files)
+yarn dev
 ```
 
 Data seeding:
