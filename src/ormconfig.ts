@@ -4,14 +4,13 @@ import config from './configs/config';
 import { DataSource } from 'typeorm';
 
 type ORMPathType = 'entities' | 'migrations' | 'subscribers';
-const isDev = process.env.NODE_ENV === 'development';
 
 /**
  * Provides the path to the specific ORM directories
  */
 function pathToLoadORM(type: ORMPathType) {
-    const startDir = (isDev ? 'src' : 'dist');
-    const lastExtension = (isDev ? 'ts' : 'js');
+    const startDir = (config.development ? 'src' : 'dist');
+    const lastExtension = (config.development ? 'ts' : 'js');
 
     let middleExtension: string;
     switch (type) {
@@ -36,7 +35,9 @@ export const appDataSource = new DataSource({
     username: config.db.username,
     password: config.db.password,
     database: config.db.database,
-    synchronize: isDev,
+    // This'll automatically modify the tables as soon as the server starts
+    // therefore, it's very bad for production
+    synchronize: config.development,
     entities: [pathToLoadORM('entities')],
     migrations: [pathToLoadORM('migrations')],
     subscribers: [pathToLoadORM('subscribers')]
