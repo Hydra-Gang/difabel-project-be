@@ -11,15 +11,15 @@
     "license": "MIT",
     "scripts": {
         "dev": "cross-env NODE_ENV=development ts-node ./src/server.ts",
-        "start": "node ./dist/server.js",
-        "compile": "yarn clean && tsc",
-        "compile:debug": "yarn compile --diagnostics",
+        "start": "node ./build/server.js",
+        "seed": "cross-env NODE_ENV=development ts-node ./src/seeder.ts",
         "clean": "rimraf ./build",
         "typeorm": "typeorm-ts-node-commonjs --transpileOnly",
-        "lint": "eslint ./src",
-        "lint:fix": "eslint ./src --fix",
         "jwt:generate": "ts-node ./scripts/jwt-generate.ts",
-        "seed": "cross-env NODE_ENV=development ts-node ./src/seeder.ts"
+        "compile": "yarn clean && tsc",
+        "compile:debug": "yarn compile --diagnostics",
+        "lint": "eslint ./src",
+        "lint:fix": "eslint ./src --fix"
     },
     "devDependencies": {
         "@types/bcrypt": "^5.0.0",
