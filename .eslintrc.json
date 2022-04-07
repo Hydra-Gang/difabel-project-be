@@ -13,7 +13,10 @@
     "parser": "@typescript-eslint/parser",
     "parserOptions": {
         "ecmaVersion": "latest",
-        "project": ["./tsconfig.json"]
+        "project": [
+            "./tsconfig.base.json",
+            "./tsconfig.json"
+        ]
     },
     "plugins": [
         "@typescript-eslint",
