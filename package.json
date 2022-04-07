@@ -18,7 +18,7 @@
         "typeorm": "typeorm-ts-node-commonjs --transpileOnly",
         "lint": "eslint ./src",
         "lint:fix": "eslint ./src --fix",
-        "jwt:generate": "node ./scripts/jwt-generate.js",
+        "jwt:generate": "ts-node ./scripts/jwt-generate.ts",
         "seed": "cross-env NODE_ENV=development ts-node ./src/seeder.ts"
     },
     "devDependencies": {
